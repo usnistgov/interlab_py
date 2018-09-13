@@ -1,0 +1,838 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>project &#8212; interlab 0.1.1 documentation</title>
+    <link rel="stylesheet" href="../_static/agogo.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://pages.nist.gov/nist-header-footer/js/jquery-1.9.0.min.js"></script>
+    <script type="text/javascript" src="https://pages.nist.gov/nist-header-footer/js/nist-header-footer.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+  </head><body>
+    <div class="header-wrapper" role="banner">
+      <div class="header">
+        <div class="headertitle"><a
+          href="../index.html">interlab 0.1.1 documentation</a></div>
+        <div class="rel" role="navigation" aria-label="related navigation">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a>
+        </div>
+       </div>
+    </div>
+
+    <div class="content-wrapper">
+      <div class="content">
+        <div class="document">
+            
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for project</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">utilities</span> <span class="k">import</span> <span class="n">ExperimentGroup</span><span class="p">,</span><span class="n">InterlabArray</span><span class="p">,</span><span class="n">g_formatter</span><span class="p">,</span><span class="n">idfunc</span>
+
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy</span> <span class="k">as</span> <span class="nn">sp</span>
+<span class="kn">import</span> <span class="nn">scipy.spatial</span> 
+<span class="kn">import</span> <span class="nn">scipy.stats</span>
+<span class="kn">import</span> <span class="nn">matplotlib</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="kn">from</span> <span class="nn">sklearn</span> <span class="k">import</span> <span class="n">preprocessing</span> <span class="k">as</span> <span class="n">skpp</span>
+
+<span class="kn">import</span> <span class="nn">plot_utils</span> <span class="k">as</span> <span class="nn">plu</span>
+
+
+<span class="c1">#We use the tqdm notebook function and its widgets in order to run a lot of things, but we don&#39;t actually need it</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">tqdm</span>
+    <span class="n">tqfunc</span> <span class="o">=</span> <span class="n">tqdm</span><span class="o">.</span><span class="n">tqdm_notebook</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="c1">#if tqdm isn&#39;t available, just use the idfunc defined below</span>
+    <span class="n">tqfunc</span><span class="o">=</span><span class="n">idfunc</span>
+
+<div class="viewcode-block" id="Project"><a class="viewcode-back" href="../Project.html#project.Project">[docs]</a><span class="k">class</span> <span class="nc">Project</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The top-level project class for the interlaboratory comparison module</span>
+<span class="sd">    </span>
+<span class="sd">    :key Sample_names: List of sample names, used as keys for the dictionaries of data set names and processed and raw data. Each key in this list will correspond to a :py:class:`ExperimentGroup` object</span>
+<span class="sd">    :key Data_set_names: Dictionary of data sets (labs) with data for each sample</span>
+<span class="sd">    :key data: Dictionary of data to be used for the interlab analysis</span>
+<span class="sd">    :key rawdata: Dictionary of unprocessed data, if different from data</span>
+<span class="sd">    </span>
+<span class="sd">    :key distance_metrics: List of distance metrics. Each metric in this list will be used to create a :py:class:`DistanceMetric` object within each :py:class:`ExperimentGroup` object</span>
+<span class="sd">    </span>
+<span class="sd">    :key x_data_list: The list of x data in the data array. For 2D data, this is not used</span>
+<span class="sd">    :key range_to_use: Used to screen certain parts of the spectral data from consideration in the experimental comparison</span>
+<span class="sd">    </span>
+<span class="sd">    :key distribution_function: Which distribution will be assumed when assigning Z scores to each measurement of a sample. The default is sp.stats.lognorm</span>
+<span class="sd">    :key outlier_dist: Which distribution will be assumed when detecting outliers. The default is the same as distribution_function</span>
+
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">rawdata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">distance_metrics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">Sample_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">Data_set_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">x_data_list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">range_to_use</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">distribution_function</span><span class="o">=</span><span class="n">sp</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">lognorm</span><span class="p">,</span>
+                 <span class="n">outlier_dist</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        
+        <span class="c1"># Feature names</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_x_data</span><span class="o">=</span><span class="kc">None</span>
+        <span class="k">if</span> <span class="n">x_data_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_x_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x_data_list</span><span class="p">)</span>
+        
+        <span class="c1"># Names for the data sets (or laboratories) and samples ()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Labels</span> <span class="o">=</span> <span class="n">Data_set_names</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Spectrum_names</span> <span class="o">=</span> <span class="n">Sample_names</span>
+        
+        <span class="c1">#Distance metrics for measuring the sample distances</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distance_metrics</span> <span class="o">=</span> <span class="n">distance_metrics</span>
+        
+        <span class="c1">#Range of data to use for analysis</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_range_to_use</span> <span class="o">=</span> <span class="n">range_to_use</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">zscores_array</span> <span class="o">=</span> <span class="nb">dict</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">pca</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">projected_zscores</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outlier_mask</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">zscore_pdf</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pdfs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_distribution_function</span> <span class="o">=</span> <span class="n">distribution_function</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_outlier_distribution</span> <span class="o">=</span> <span class="n">outlier_dist</span>
+        <span class="k">if</span> <span class="n">outlier_dist</span> <span class="ow">is</span>  <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_outlier_distribution</span> <span class="o">=</span> <span class="n">distribution_function</span>
+        <span class="c1">#Create the experiment groups</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">experiment_groups</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_create_groups</span><span class="p">(</span><span class="n">xdata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_x_data</span><span class="p">,</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span><span class="n">rawdata</span><span class="o">=</span><span class="n">rawdata</span><span class="p">,</span><span class="n">data_names</span><span class="o">=</span><span class="n">Data_set_names</span><span class="p">)</span>
+        
+        
+        <span class="c1">#Create the list of unique labs</span>
+        <span class="n">project_lablist</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiment_groups</span><span class="p">:</span>
+            <span class="n">project_lablist</span> <span class="o">+=</span> <span class="nb">list</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">data_names</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">lablist</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">project_lablist</span><span class="p">))</span>
+        
+        <span class="c1">#Create the interlab arrays that will be used for outlier analysis        </span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interlab_arrays</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_create_interlab_arrays</span><span class="p">()</span>
+        
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1">#allitems = self.experiment_groups + [self.interlab_arrays[metric[&#39;metric&#39;]] for metric in self.distance_metrics]</span>
+        <span class="n">exps_rep</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Experiments:&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiment_groups</span><span class="p">]</span>
+        <span class="n">inls_rep</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Interlab arrays:&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interlab_arrays</span><span class="p">[</span><span class="n">metric</span><span class="p">[</span><span class="s1">&#39;metric&#39;</span><span class="p">]])</span> <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_metrics</span><span class="p">]</span>
+        
+        <span class="n">str_rep</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">  &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">exps_rep</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">  &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">inls_rep</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">str_rep</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiment_groups</span><span class="p">:</span>
+            <span class="n">names</span><span class="p">[</span><span class="n">item</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">item</span>
+        <span class="k">return</span> <span class="n">names</span>
+    
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiment_groups</span>
+        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">slice</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiment_groups</span><span class="p">[</span><span class="n">x</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">tuple</span><span class="p">:</span>
+            <span class="n">exp</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">metric</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">group</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_experiment</span><span class="p">(</span><span class="n">exp</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">metric</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">group</span><span class="p">[</span><span class="n">metric</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">[</span><span class="n">group</span><span class="p">[</span><span class="n">metric</span><span class="p">]</span> <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span>
+            <span class="n">groups</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_experiment</span><span class="p">(</span><span class="n">exp</span><span class="p">)</span> <span class="k">for</span> <span class="n">exp</span> <span class="ow">in</span> <span class="n">x</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">groups</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_experiment</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">_get_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">exp</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">exp</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">int</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiment_groups</span><span class="p">[</span><span class="n">exp</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">exp</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;No experiment with name &#39;</span> <span class="o">+</span> <span class="n">exp</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">_create_groups</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">xdata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">rawdata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">data_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,):</span>
+        
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Spectrum_names</span><span class="p">:</span>
+            
+            <span class="n">group_keyw</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">key</span><span class="p">,</span>
+                              <span class="n">xdata</span><span class="o">=</span><span class="n">xdata</span><span class="p">,</span>
+                              <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">],</span>
+                              <span class="n">rawdata</span><span class="o">=</span><span class="n">rawdata</span><span class="p">[</span><span class="n">key</span><span class="p">],</span>
+                              <span class="n">data_names</span><span class="o">=</span><span class="n">data_names</span><span class="p">[</span><span class="n">key</span><span class="p">],</span>
+                              <span class="n">distance_metrics</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">distance_metrics</span><span class="p">,</span>
+                              <span class="n">distribution</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_distribution_function</span><span class="p">,</span>
+                              <span class="c1">#mahalanobis_dict=self.mahalanobis_dict</span>
+                             <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">experiment_groups</span> <span class="o">+=</span> <span class="p">[</span><span class="n">ExperimentGroup</span><span class="p">(</span><span class="o">**</span><span class="n">group_keyw</span><span class="p">)]</span>
+        
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">_create_interlab_arrays</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        
+        <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_metrics</span><span class="p">:</span>
+            <span class="n">metric_name</span> <span class="o">=</span> <span class="n">metric</span><span class="p">[</span><span class="s1">&#39;metric&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">interlab_arrays</span><span class="p">[</span><span class="n">metric_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">InterlabArray</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">metric_name</span><span class="p">)</span>
+        <span class="k">return</span>
+    
+<div class="viewcode-block" id="Project.set_distances"><a class="viewcode-back" href="../Project.html#project.Project.set_distances">[docs]</a>    <span class="k">def</span> <span class="nf">set_distances</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculates the interspectral distances for each experiment group and metric</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="n">tqfunc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distance_metrics</span><span class="p">,</span><span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Distances&#39;</span><span class="p">):</span>
+            <span class="n">metric_name</span> <span class="o">=</span> <span class="n">metric</span><span class="p">[</span><span class="s1">&#39;metric&#39;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">tqfunc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">experiment_groups</span><span class="p">,</span><span class="n">desc</span><span class="o">=</span><span class="n">metric_name</span><span class="p">):</span>
+                <span class="n">group</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="n">metric_name</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="Project.fit_zscores"><a class="viewcode-back" href="../Project.html#project.Project.fit_zscores">[docs]</a>    <span class="k">def</span> <span class="nf">fit_zscores</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Fits the sample-level zscores for each experiment group and metric.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="n">tqfunc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distance_metrics</span><span class="p">,</span><span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Sample Zscores&#39;</span><span class="p">):</span>
+            <span class="n">metric_name</span> <span class="o">=</span> <span class="n">metric</span><span class="p">[</span><span class="s1">&#39;metric&#39;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">tqfunc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">experiment_groups</span><span class="p">,</span><span class="n">desc</span><span class="o">=</span><span class="n">metric_name</span><span class="p">):</span>
+                <span class="n">group</span><span class="o">.</span><span class="n">fit_zscores</span><span class="p">(</span><span class="n">metric_name</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="Project.find_outliers"><a class="viewcode-back" href="../Project.html#project.Project.find_outliers">[docs]</a>    <span class="k">def</span> <span class="nf">find_outliers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Finds the sample outliers for each experiment group and metric.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="n">tqfunc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distance_metrics</span><span class="p">,</span><span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Sample Outliers&#39;</span><span class="p">):</span>
+            <span class="n">metric_name</span> <span class="o">=</span> <span class="n">metric</span><span class="p">[</span><span class="s1">&#39;metric&#39;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">tqfunc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">experiment_groups</span><span class="p">,</span><span class="n">desc</span><span class="o">=</span><span class="n">metric_name</span><span class="p">):</span>
+                <span class="n">group</span><span class="o">.</span><span class="n">find_outliers</span><span class="p">(</span><span class="n">metric_name</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="Project.fit_lab_zscores"><a class="viewcode-back" href="../Project.html#project.Project.fit_lab_zscores">[docs]</a>    <span class="k">def</span> <span class="nf">fit_lab_zscores</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Fits the lab-level zscores for each metric.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="n">tqfunc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distance_metrics</span><span class="p">,</span><span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Lab Zscores&#39;</span><span class="p">):</span>
+            <span class="n">metric_name</span> <span class="o">=</span> <span class="n">metric</span><span class="p">[</span><span class="s1">&#39;metric&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">interlab_arrays</span><span class="p">[</span><span class="n">metric_name</span><span class="p">]</span><span class="o">.</span><span class="n">fit_zscores</span><span class="p">()</span></div>
+    
+<div class="viewcode-block" id="Project.find_lab_outliers"><a class="viewcode-back" href="../Project.html#project.Project.find_lab_outliers">[docs]</a>    <span class="k">def</span> <span class="nf">find_lab_outliers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Finds the lab outliers for each metric.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="n">tqfunc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distance_metrics</span><span class="p">,</span><span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Lab outliers&#39;</span><span class="p">):</span>
+            <span class="n">metric_name</span> <span class="o">=</span> <span class="n">metric</span><span class="p">[</span><span class="s1">&#39;metric&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">interlab_arrays</span><span class="p">[</span><span class="n">metric_name</span><span class="p">]</span><span class="o">.</span><span class="n">find_outliers</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="Project.extract_matrices"><a class="viewcode-back" href="../Project.html#project.Project.extract_matrices">[docs]</a>    <span class="k">def</span> <span class="nf">extract_matrices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Runs :py:func:`.extract_experimental_matrix` for each experimental matrix</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="n">tqfunc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distance_metrics</span><span class="p">,</span><span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Extract matrices&#39;</span><span class="p">):</span>
+            <span class="n">metric_name</span> <span class="o">=</span> <span class="n">metric</span><span class="p">[</span><span class="s1">&#39;metric&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">extract_experimental_matrix</span><span class="p">(</span><span class="n">metric</span><span class="o">=</span><span class="n">metric_name</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="Project.plot_distance_fig"><a class="viewcode-back" href="../Project.html#project.Project.plot_distance_fig">[docs]</a>    <span class="k">def</span> <span class="nf">plot_distance_fig</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">plot_range</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                          <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;Greys&#39;</span><span class="p">,</span><span class="n">linecolor</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span>
+                          <span class="n">distance_metrics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">plot_data</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">wspace</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                          <span class="n">ylabel_buffer</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span><span class="n">rightlabel_buffer</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span><span class="n">xlabel_buffer</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;For each sample, generates the following plots:</span>
+<span class="sd">          * A plot of the spectra generated for that sample by each laboratory</span>
+<span class="sd">          * For each metric, a heat map plot of the interspectral distance matrix</span>
+<span class="sd">        </span>
+<span class="sd">        :key plot_range: An iterable of integers specifying which sample labels to plot</span>
+<span class="sd">        :key cmap: The color map that will be used for the distance heat maps</span>
+<span class="sd">        :key linecolor: The line color that will be used for the spectral data</span>
+<span class="sd">        :key distance_metrics: A list of the distance metrics for which heat maps will be plotted. If None, plot heat maps for all metrics in this project</span>
+<span class="sd">        :key plot_data: Boolean that tells whether the raw spectral data will be plotted</span>
+<span class="sd">        :key wspace: Horizontal spacing between the heat maps</span>
+<span class="sd">        :key ylabel_buffer: Space allocated for the y axis label (in inches)</span>
+<span class="sd">        :key rightlabel_buffer: Space allocated for the colorbar label (in inches)</span>
+<span class="sd">        :key xlabel_buffer: </span>
+<span class="sd">        :returns: distance_fig, the distance measure figure matplotlib object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="c1">#If no distance metrics are specified, plot them all</span>
+        <span class="k">if</span> <span class="n">distance_metrics</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> 
+            <span class="n">distance_metrics</span> <span class="o">=</span> <span class="p">[</span><span class="n">metric</span><span class="p">[</span><span class="s1">&#39;metric&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_metrics</span><span class="p">]</span>
+        
+        <span class="n">sets_to_plot</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">plot_range</span><span class="p">]</span><span class="c1">#self._scan_plot_range(plot_range)</span>
+        
+        
+        <span class="c1">#Number of distance plots, number of sets to plot, and number of columns in the plot</span>
+        <span class="n">numdist</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">distance_metrics</span><span class="p">)</span>
+        <span class="n">numspecs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sets_to_plot</span><span class="p">)</span>
+        <span class="n">numcols</span> <span class="o">=</span> <span class="n">numdist</span>
+
+        <span class="c1"># Height of each row, in inches</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="mf">1.5</span>
+
+        <span class="c1">#Width of the spectrum column and distance-metric column, in terms of row height</span>
+        <span class="n">spectrum_width</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="n">distance_width</span> <span class="o">=</span> <span class="mf">1.5</span>
+
+        <span class="n">widths</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">total_width</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="n">plot_data</span><span class="p">:</span>
+            <span class="n">numcols</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">widths</span> <span class="o">+=</span> <span class="p">[</span><span class="n">spectrum_width</span><span class="p">]</span>
+            <span class="n">total_width</span> <span class="o">+=</span> <span class="n">spectrum_width</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numdist</span><span class="p">):</span>
+            <span class="n">widths</span> <span class="o">+=</span> <span class="p">[</span><span class="n">distance_width</span><span class="p">]</span> <span class="c1"># Add the appropriate number of columns to the width list</span>
+            <span class="n">total_width</span> <span class="o">+=</span> <span class="n">distance_width</span>
+
+        <span class="n">fs</span> <span class="o">=</span> <span class="p">(</span><span class="n">total_width</span> <span class="o">*</span> <span class="n">height</span><span class="p">,</span><span class="n">numspecs</span> <span class="o">*</span> <span class="n">height</span><span class="p">)</span> <span class="c1">#total figure size, inches</span>
+        <span class="n">gs_key</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">width_ratios</span><span class="o">=</span><span class="n">widths</span><span class="p">,</span><span class="n">hspace</span><span class="o">=</span><span class="mf">0.075</span><span class="p">,</span><span class="n">wspace</span><span class="o">=</span><span class="n">wspace</span><span class="p">)</span>
+        
+        <span class="c1">#Create the figure we&#39;re going to plot in</span>
+        <span class="n">sfig</span><span class="p">,</span><span class="n">saxes</span> <span class="o">=</span> <span class="n">plu</span><span class="o">.</span><span class="n">make_grid_plot</span><span class="p">(</span><span class="n">numspecs</span><span class="p">,</span><span class="n">numcols</span><span class="p">,</span><span class="n">figsize</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span><span class="n">gridspec_kw</span><span class="o">=</span><span class="n">gs_key</span><span class="p">,</span>
+                                        <span class="n">sharey</span><span class="o">=</span><span class="s1">&#39;row&#39;</span><span class="p">,</span><span class="c1">#sharex=&#39;col&#39;,</span>
+                                        <span class="n">right_ylabel</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;Pairwise Distance, $D_{ij,k}$&#39;</span><span class="p">,</span>
+                                        <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Data set ID&#39;</span><span class="p">,</span><span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Data set ID&#39;</span><span class="p">,</span>
+                                        <span class="n">ylabel_buffer</span><span class="o">=</span><span class="n">ylabel_buffer</span><span class="p">,</span>
+                                        <span class="n">rightlabel_buffer</span><span class="o">=</span><span class="n">rightlabel_buffer</span><span class="p">,</span>
+                                        <span class="n">xlabel_buffer</span><span class="o">=</span><span class="n">xlabel_buffer</span><span class="p">,</span>
+                                        <span class="n">add_buffer</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">show_titles</span> <span class="o">=</span> <span class="kc">True</span>
+        
+        <span class="c1">#Create the distance measure plots</span>
+        <span class="k">for</span> <span class="n">group</span><span class="p">,</span><span class="n">ax_row</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">sets_to_plot</span><span class="p">,</span><span class="n">saxes</span><span class="p">):</span>
+            <span class="n">group</span><span class="o">.</span><span class="n">distance_measure_plot</span><span class="p">(</span><span class="n">ax_row</span><span class="p">,</span><span class="n">plot_data</span><span class="o">=</span><span class="n">plot_data</span><span class="p">,</span>
+                                        <span class="n">data_kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">linecolor</span><span class="o">=</span><span class="n">linecolor</span><span class="p">),</span>
+                                        <span class="n">distance_kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">),</span>
+                                        <span class="n">distance_metrics</span><span class="o">=</span><span class="n">distance_metrics</span><span class="p">,</span>
+                                        <span class="n">show_titles</span><span class="o">=</span><span class="n">show_titles</span><span class="p">)</span>          
+            <span class="n">show_titles</span> <span class="o">=</span> <span class="kc">False</span>
+        
+        <span class="c1">#Change the heat map ranges so that they&#39;re all the same</span>
+        <span class="k">for</span> <span class="n">metric_num</span><span class="p">,</span><span class="n">metric_name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">distance_metrics</span><span class="p">):</span>
+            
+            <span class="c1">#metric_name = metric[&#39;metric&#39;]</span>
+            
+            <span class="c1">#Find the least minimum and greatest maximum for all of the groups for this metric</span>
+            <span class="n">plot_min</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">plot_max</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">sets_to_plot</span><span class="p">:</span>
+                <span class="n">pmn</span><span class="p">,</span><span class="n">pmx</span> <span class="o">=</span> <span class="n">group</span><span class="p">[</span><span class="n">metric_name</span><span class="p">]</span><span class="o">.</span><span class="n">minmax</span><span class="p">()</span>
+                <span class="n">plot_min</span> <span class="o">+=</span> <span class="p">[</span><span class="n">pmn</span><span class="p">]</span>
+                <span class="n">plot_max</span> <span class="o">+=</span> <span class="p">[</span><span class="n">pmx</span><span class="p">]</span>
+            <span class="n">distance_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">plot_min</span><span class="p">)</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+            <span class="n">distance_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">plot_max</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+            
+            <span class="c1">#Expand the limits of the images to be the same as the least min and greatest max</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">saxes</span><span class="p">:</span>
+                <span class="n">plot_locator</span> <span class="o">=</span> <span class="n">metric_num</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">plot_data</span><span class="p">)</span> <span class="c1">#need to increment this by 1 if the data is being plotted with the heat maps</span>
+                <span class="n">im</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="n">plot_locator</span><span class="p">]</span><span class="o">.</span><span class="n">get_images</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">im</span><span class="o">.</span><span class="n">set_clim</span><span class="p">(</span><span class="n">vmin</span><span class="o">=</span><span class="n">distance_min</span><span class="p">,</span><span class="n">vmax</span><span class="o">=</span><span class="n">distance_max</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">sfig</span></div>
+    
+    
+    <span class="k">def</span> <span class="nf">process_mahalanobis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">sets_to_extract</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">threshold</span><span class="o">=</span><span class="mf">1e-1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculates the pooled covariance for use by Mahalanobis distance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="c1">#Extract the groups we want to use for the Mahalanobis distance</span>
+        <span class="n">groups_to_use</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">sets_to_extract</span><span class="p">]</span><span class="c1">#self._scan_plot_range(sets_to_extract)</span>
+        
+        <span class="c1">#Default values need defined before running</span>
+        <span class="n">covariance</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">denom</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">groups_to_use</span><span class="p">:</span>
+            <span class="c1">#Mean-center the data</span>
+            <span class="n">data_centered</span> <span class="o">=</span> <span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">T</span> <span class="o">-</span> <span class="n">group</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+            
+            <span class="c1">#Covariance matrix for this group</span>
+            <span class="n">cov_this</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">data_centered</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">covariance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">covariance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">cov_this</span><span class="p">)</span>
+            
+            <span class="c1">#This appears a lot because statistics</span>
+            <span class="n">std_factor</span> <span class="o">=</span> <span class="n">group</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+            
+            <span class="c1">#Start adding together the weighted covariances</span>
+            <span class="n">covariance</span> <span class="o">+=</span> <span class="n">std_factor</span> <span class="o">*</span> <span class="n">cov_this</span>
+            <span class="n">denom</span> <span class="o">+=</span> <span class="n">std_factor</span>
+        <span class="c1">#Final step of pooling</span>
+        <span class="n">covariance</span> <span class="o">=</span> <span class="n">covariance</span> <span class="o">/</span> <span class="n">denom</span>
+        
+        <span class="c1">#Pseudo-inverse</span>
+        <span class="n">VI</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">covariance</span><span class="p">,</span><span class="n">rcond</span><span class="o">=</span><span class="n">threshold</span><span class="p">)</span>
+        
+        <span class="c1">#self.mahalanobis_dict = dict(VI=VI,)</span>
+        
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">groups_to_use</span><span class="p">:</span>
+            <span class="n">group</span><span class="p">[</span><span class="s1">&#39;Mahalanobis&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">mahalanobis_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">VI</span><span class="o">=</span><span class="n">VI</span><span class="p">,)</span>
+        
+    
+    
+    <span class="k">def</span> <span class="nf">_extract_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">sets</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">metric</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">screen_outliers</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Turns the dict-of-zscores into a zscores array with experiments on one axis and labs on the other. Replaces missing lab/experiment combinations with np.nan&#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">metric</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Must specify the metric to use&#39;</span><span class="p">)</span>
+        
+        <span class="n">sets_to_extract</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">sets</span><span class="p">]</span><span class="c1">#self._scan_plot_range(sets)</span>
+        <span class="c1">#if sets is None: sets = [group.name for group in sets_to_extract]</span>
+            
+        <span class="c1">#Create the array of zscores for experiments</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sets</span><span class="p">),</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lablist</span><span class="p">))</span>
+        <span class="n">zscores_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">zscores_array</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">sets_to_extract</span><span class="p">:</span>
+            <span class="c1">#Extract z-scores and outliers            </span>
+            <span class="n">zscores</span> <span class="o">=</span> <span class="n">group</span><span class="p">[</span><span class="n">metric</span><span class="p">]</span><span class="o">.</span><span class="n">zscores</span>
+            <span class="k">if</span> <span class="n">screen_outliers</span><span class="p">:</span>
+                <span class="n">outliers</span> <span class="o">=</span> <span class="o">~</span><span class="n">group</span><span class="p">[</span><span class="n">metric</span><span class="p">]</span><span class="o">.</span><span class="n">outlier_mask</span> <span class="c1">#outlier_mask MASKS the outliers, we want the opposite</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1">#If we&#39;re not screening outliers, the outlier mask should just be all zeros, i.e. nothing is an outlier</span>
+                <span class="n">outliers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="n">metric</span><span class="p">]</span><span class="o">.</span><span class="n">outlier_mask</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
+            <span class="n">data_names</span> <span class="o">=</span> <span class="n">group</span><span class="o">.</span><span class="n">data_names</span>
+            
+            <span class="c1">#key_location and lab_location tell us where to find the inlier and outlier labs</span>
+            <span class="n">key_location</span> <span class="o">=</span> <span class="n">sets</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">outlier</span><span class="p">,</span><span class="n">zscore</span><span class="p">,</span><span class="n">data_name</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">outliers</span><span class="p">,</span><span class="n">zscores</span><span class="p">,</span><span class="n">data_names</span><span class="p">):</span>
+                <span class="n">lab_location</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lablist</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">data_name</span><span class="p">)</span>
+                
+                <span class="c1">#If this element in zscores_array is nan, then we haven&#39;t filled it yet</span>
+                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">zscores_array</span><span class="p">[</span><span class="n">key_location</span><span class="p">,</span><span class="n">lab_location</span><span class="p">]):</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">outlier</span><span class="p">:</span>
+                        <span class="n">zscores_array</span><span class="p">[</span><span class="n">key_location</span><span class="p">,</span><span class="n">lab_location</span><span class="p">]</span> <span class="o">=</span> <span class="n">zscore</span>
+                <span class="c1">#Otherwise, we&#39;ve filled it, so take the average</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">outlier</span><span class="p">:</span>
+                        <span class="n">zscores_array</span><span class="p">[</span><span class="n">key_location</span><span class="p">,</span><span class="n">lab_location</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">zscores_array</span><span class="p">[</span><span class="n">key_location</span><span class="p">,</span><span class="n">lab_location</span><span class="p">]</span> <span class="o">+</span> <span class="n">zscore</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+        <span class="k">return</span> <span class="n">zscores_array</span>
+    
+<div class="viewcode-block" id="Project.extract_experimental_matrix"><a class="viewcode-back" href="../Project.html#project.Project.extract_experimental_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">extract_experimental_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                    <span class="n">sets</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                    <span class="n">metric</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                    <span class="n">screen_outliers</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                    <span class="n">imputation_axis</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Extracts the zscore data from the dict-of-vectors format and casts it as a 2D array.</span>
+<span class="sd">        </span>
+<span class="sd">        The dictionary of sample-level z-scores is recast as an array, with one dimension corresponding to sample names and the other corresponding to laboratory.</span>
+<span class="sd">        </span>
+<span class="sd">        :key sets: Sets to extract for the interlab comparison</span>
+<span class="sd">        :key metric: Distance metric that will be used</span>
+<span class="sd">        :key screen_outliers: Whether to remove outlier measurements before imputing missing values</span>
+<span class="sd">        :key imputation_axis: Axis along which to impute missing values</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="k">if</span> <span class="n">sets</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="n">group</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiment_groups</span><span class="p">]</span>
+        
+        <span class="n">zscores_array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_matrix</span><span class="p">(</span><span class="n">sets</span><span class="o">=</span><span class="n">sets</span><span class="p">,</span><span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">,</span><span class="n">screen_outliers</span><span class="o">=</span><span class="n">screen_outliers</span><span class="p">)</span>
+        
+        <span class="c1">#Find labs that have had all their spectra removed as outlier spectra</span>
+        <span class="n">no_exp_for_lab</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">zscores_array</span><span class="p">),</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        
+        <span class="c1">#Impute the missing Z scores by replacing all nan values with the median</span>
+        <span class="n">imp</span> <span class="o">=</span>  <span class="n">skpp</span><span class="o">.</span><span class="n">Imputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s1">&#39;median&#39;</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="n">imputation_axis</span><span class="p">)</span> 
+        <span class="n">zscores_imputed</span> <span class="o">=</span> <span class="n">imp</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">zscores_array</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="o">~</span><span class="n">no_exp_for_lab</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+        
+        <span class="c1">#Load the imputed score array into the interlab array object</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interlab_arrays</span><span class="p">[</span><span class="n">metric</span><span class="p">]</span><span class="o">.</span><span class="n">data_array</span> <span class="o">=</span> <span class="n">zscores_imputed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interlab_arrays</span><span class="p">[</span><span class="n">metric</span><span class="p">]</span><span class="o">.</span><span class="n">lablist</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lablist</span><span class="p">)[</span><span class="o">~</span><span class="n">no_exp_for_lab</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interlab_arrays</span><span class="p">[</span><span class="n">metric</span><span class="p">]</span><span class="o">.</span><span class="n">datasets</span> <span class="o">=</span> <span class="n">sets</span>
+        
+        <span class="c1">#PCA transformation and projected statistial distance calculation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interlab_arrays</span><span class="p">[</span><span class="n">metric</span><span class="p">]</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">()</span>
+        <span class="k">return</span></div>
+    
+    <span class="k">def</span> <span class="nf">plot_zscores_heatmap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                             <span class="n">sets</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                             <span class="n">metric</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                             <span class="n">screen_outliers</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                             <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;Greys&#39;</span><span class="p">,</span><span class="o">**</span><span class="n">subplot_kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Extracts the zscore data from the dict-of-vectors format and casts it as a 2D array, plotting it with missing and outlier data called out.</span>
+<span class="sd">        </span>
+<span class="sd">        The dictionary of sample-level z-scores is recast as an array, with one dimension corresponding to sample names and the other corresponding to laboratory. The array is then plotted as a heat map.</span>
+<span class="sd">        :key sets: Sets to extract for the interlab comparison</span>
+<span class="sd">        :key metric: Distance metric that will be used</span>
+<span class="sd">        :key screen_outliers: Whether to remove outlier measurements before imputing missing values</span>
+<span class="sd">        :key imputation_axis: Axis along which to impute missing values</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">sets</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="n">group</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiment_groups</span><span class="p">]</span>
+        
+        <span class="c1">#Extract the experiment matrix without screening outliers</span>
+        <span class="n">zscores_array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_matrix</span><span class="p">(</span><span class="n">sets</span><span class="o">=</span><span class="n">sets</span><span class="p">,</span><span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">,</span><span class="n">screen_outliers</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        
+        <span class="c1">#Find the smallest finite value in the matrix (NaNs are missing) and set the vmin for the heatmap to that value. Then fill the NaNs with zeros</span>
+        <span class="n">vmin</span> <span class="o">=</span> <span class="n">zscores_array</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">zscores_array</span><span class="p">)]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="n">zscores_array</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">zscores_array</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
+        
+        <span class="c1">#By default, we are not flagging outliers</span>
+        <span class="n">vmax</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">extend</span> <span class="o">=</span> <span class="s1">&#39;min&#39;</span>
+        
+        <span class="k">if</span> <span class="n">screen_outliers</span><span class="p">:</span>
+            <span class="n">extend</span> <span class="o">=</span> <span class="s1">&#39;both&#39;</span>
+            <span class="c1">#Find the outlier limit, which is the 95th (94.95) percentile, and set vmax to that value</span>
+            <span class="n">std</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_distribution_function</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">vmax</span> <span class="o">=</span> <span class="n">std</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="mf">0.9495</span><span class="p">)</span>
+        
+        <span class="c1">#Create the figure and axis objects</span>
+        <span class="n">fig</span><span class="p">,</span><span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="o">**</span><span class="n">subplot_kwargs</span><span class="p">)</span>
+        
+        <span class="c1">#Get the colormap and then set the over- and under-colors</span>
+        <span class="n">cmaps</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="n">cmap</span><span class="p">)</span>
+        <span class="n">cmaps</span><span class="o">.</span><span class="n">set_over</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="c1">#Red for outliers</span>
+        <span class="n">cmaps</span><span class="o">.</span><span class="n">set_under</span><span class="p">(</span><span class="s1">&#39;0.6&#39;</span><span class="p">)</span> <span class="c1">#Grey for missing data</span>
+        
+        <span class="c1">#Plot the heat map and color bar</span>
+        <span class="n">im</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">zscores_array</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="n">cmaps</span><span class="p">,</span><span class="n">origin</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span><span class="n">aspect</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span><span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span><span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">)</span>
+        <span class="n">cb</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im</span><span class="p">,</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span><span class="n">extend</span><span class="o">=</span><span class="n">extend</span><span class="p">)</span>
+        
+        <span class="c1">#Axis labels</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Experiment&#39;</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Data Set ID&#39;</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
+        <span class="n">cb</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s1">&#39;Z-score&#39;</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
+        
+        <span class="c1">#X tick labels for facilities</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lablist</span><span class="p">)))</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lablist</span><span class="p">,</span><span class="n">rotation</span><span class="o">=</span><span class="s1">&#39;vertical&#39;</span><span class="p">)</span>
+        
+        <span class="c1">#Y tick labels for experiment groups</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sets</span><span class="p">)))</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">(</span><span class="n">sets</span><span class="p">)</span>
+
+    
+    <span class="k">def</span> <span class="nf">_standard_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">numplots</span><span class="p">,</span><span class="n">numcols</span><span class="p">,</span><span class="n">gs_kw</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">wspace</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span><span class="n">hspace</span><span class="o">=</span><span class="mf">0.4</span><span class="p">),</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Creates a standard plot that we use a lot&#39;&#39;&#39;</span>
+        
+        <span class="n">numrows</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="n">numplots</span> <span class="o">+</span> <span class="n">numcols</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">/</span> <span class="n">numcols</span><span class="p">))</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="mi">5</span>
+        
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax_array</span> <span class="o">=</span> <span class="n">plu</span><span class="o">.</span><span class="n">make_grid_plot</span><span class="p">(</span><span class="n">numrows</span><span class="p">,</span><span class="n">numcols</span><span class="p">,</span>
+                                           <span class="n">plotsize</span><span class="o">=</span><span class="p">(</span><span class="n">width</span><span class="p">,</span><span class="n">height</span><span class="p">),</span>
+                                           <span class="n">gridspec_kw</span><span class="o">=</span><span class="n">gs_kw</span><span class="p">,</span>
+                                           <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">axes</span> <span class="o">=</span> <span class="n">ax_array</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="s1">&#39;F&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">fig</span><span class="p">,</span><span class="n">axes</span>
+    
+    <span class="k">def</span> <span class="nf">_scan_plot_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">plot_range</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1">#If no experimental groups are specified, show them all</span>
+        <span class="k">if</span> <span class="n">plot_range</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> 
+            <span class="n">sets_to_plot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiment_groups</span>
+        <span class="c1">#Otherwise, find the groups by name</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sets_to_plot</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">plot_range</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiment_groups</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">group</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name</span><span class="p">:</span> <span class="n">sets_to_plot</span> <span class="o">+=</span> <span class="p">[</span><span class="n">group</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">sets_to_plot</span>
+    
+<div class="viewcode-block" id="Project.plot_histograms"><a class="viewcode-back" href="../Project.html#project.Project.plot_histograms">[docs]</a>    <span class="k">def</span> <span class="nf">plot_histograms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">metric</span><span class="p">,</span><span class="n">plot_range</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">numcols</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">xlabel_buffer</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span><span class="n">rotation</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Plots a histogram of the average interspectral distance for each sample, along with the corresponding fit</span>
+<span class="sd">        </span>
+<span class="sd">        :param metrics: The metric for which the distances will be plotted</span>
+<span class="sd">        :key plot_range: An iterable of integers specifying which sample labels to plot</span>
+<span class="sd">        :key numcols: The number of columns in the distance plot</span>
+<span class="sd">        :key xlabel_buffer: Space allocated for x-axis labels (in inches)</span>
+<span class="sd">        :key rotation: Specifies the orientation of the z-score labels for individual labs</span>
+<span class="sd">        :returns pdffig: The distances and scores plot as a matplotlib figure object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sets_to_plot</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">plot_range</span><span class="p">]</span><span class="c1">#self._scan_plot_range(plot_range)</span>
+        
+        <span class="n">numplots</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sets_to_plot</span><span class="p">)</span>
+        
+        <span class="n">xlabel</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;Average Diameter Distance, $\^</span><span class="si">{D}</span><span class="s2">_{i,k}$&quot;</span>
+        <span class="n">ylabel</span> <span class="o">=</span> <span class="s2">&quot;Probability Density&quot;</span>
+        
+        <span class="n">gs_kw</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">wspace</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span><span class="n">hspace</span><span class="o">=</span><span class="mf">0.4</span><span class="p">)</span>
+        
+        <span class="n">pdffig</span><span class="p">,</span><span class="n">pdfax</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_standard_plot</span><span class="p">(</span><span class="n">numplots</span><span class="p">,</span><span class="n">numcols</span><span class="p">,</span><span class="n">gs_kw</span><span class="o">=</span><span class="n">gs_kw</span><span class="p">,</span>
+                                           <span class="n">xlabel_buffer</span><span class="o">=</span><span class="n">xlabel_buffer</span><span class="p">,</span>
+                                           <span class="n">ylabel</span><span class="o">=</span><span class="n">ylabel</span><span class="p">,</span><span class="n">xlabel</span><span class="o">=</span><span class="n">xlabel</span><span class="p">,</span>
+                                           <span class="n">add_buffer</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                           <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">sharey</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                          <span class="p">)</span>
+        <span class="n">plot_min</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">plot_max</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">sets_to_plot</span><span class="p">:</span>
+            <span class="n">plot_min</span> <span class="o">+=</span> <span class="p">[</span><span class="n">group</span><span class="p">[</span><span class="n">metric</span><span class="p">]</span><span class="o">.</span><span class="n">distance_min</span><span class="p">]</span>
+            <span class="n">plot_max</span> <span class="o">+=</span> <span class="p">[</span><span class="n">group</span><span class="p">[</span><span class="n">metric</span><span class="p">]</span><span class="o">.</span><span class="n">distance_max</span><span class="p">]</span>
+
+        <span class="n">distance_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">plot_min</span><span class="p">)</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="n">distance_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">plot_max</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        
+        <span class="c1">#Create the histogram bins and corresponding PDF evaluation points</span>
+        <span class="n">num_bins</span> <span class="o">=</span> <span class="mi">20</span>
+        <span class="n">max_bin</span> <span class="o">=</span> <span class="n">distance_max</span>
+        <span class="n">min_bin</span> <span class="o">=</span> <span class="n">distance_min</span>
+        <span class="n">binsize</span> <span class="o">=</span> <span class="p">(</span><span class="n">max_bin</span> <span class="o">-</span> <span class="n">min_bin</span><span class="p">)</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">num_bins</span><span class="p">)</span>
+        <span class="n">lognorm_xvals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">min_bin</span><span class="p">,</span><span class="n">max_bin</span><span class="p">,</span><span class="n">num_bins</span><span class="o">*</span><span class="mi">10</span><span class="p">)</span>
+        
+        <span class="c1">#Ticks</span>
+        <span class="n">pdf_locator</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">MaxNLocator</span><span class="p">(</span><span class="n">nbins</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="n">prune</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">)</span>
+        
+        <span class="c1">#Plot each histogram</span>
+        <span class="k">for</span> <span class="n">ax</span><span class="p">,</span><span class="n">group</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">pdfax</span><span class="p">,</span><span class="n">sets_to_plot</span><span class="p">):</span>
+            <span class="n">group</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">metric</span><span class="p">,</span><span class="n">ax</span><span class="p">,</span>
+                            <span class="n">num_bins</span><span class="o">=</span><span class="n">num_bins</span><span class="p">,</span><span class="n">max_bin</span><span class="o">=</span><span class="n">max_bin</span><span class="p">,</span><span class="n">min_bin</span><span class="o">=</span><span class="n">min_bin</span><span class="p">)</span>
+            
+            <span class="c1">#Count number of non-outlier samples</span>
+            <span class="n">num_samples</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="n">metric</span><span class="p">]</span><span class="o">.</span><span class="n">outlier_mask</span><span class="p">),</span><span class="nb">len</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">data_names</span><span class="p">))</span>
+            
+            <span class="c1">#Annotate the histograms</span>
+            <span class="n">plot_text</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="n">group</span><span class="o">.</span><span class="n">name</span><span class="p">,</span><span class="s1">&#39;N = </span><span class="si">{}</span><span class="s1"> / </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="n">num_samples</span><span class="p">)))</span>
+            
+            <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.98</span><span class="p">,</span><span class="mf">0.9</span><span class="p">,</span><span class="n">plot_text</span><span class="p">,</span><span class="n">ha</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">,</span><span class="n">va</span><span class="o">=</span><span class="s1">&#39;top&#39;</span><span class="p">,</span><span class="n">transform</span><span class="o">=</span><span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_major_locator</span><span class="p">(</span><span class="n">pdf_locator</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">pdffig</span></div>
+    
+<div class="viewcode-block" id="Project.plot_zscore_distances"><a class="viewcode-back" href="../Project.html#project.Project.plot_zscore_distances">[docs]</a>    <span class="k">def</span> <span class="nf">plot_zscore_distances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">metric</span><span class="p">,</span><span class="n">plot_range</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">numcols</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                              <span class="n">xlabel_buffer</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">ylabel_buffer</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span>
+                              <span class="n">rotation</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Plots a bar chart of the average interspectral distance for each sample, annotated with the generalized Z score for each sample</span>
+<span class="sd">        </span>
+<span class="sd">        :param metric: The metric for which the distances will be plotted</span>
+<span class="sd">        :key plot_range: An iterable of integers specifying which sample labels to plot</span>
+<span class="sd">        :key numcols: The number of columns in the distance plot</span>
+<span class="sd">        :key xlabel_buffer: Space allocated for x-axis labels (in inches)</span>
+<span class="sd">        :key ylabel_buffer: Space allocated for y-axis labels (in inches)</span>
+<span class="sd">        :key rotation: Specifies the orientation of the z-score labels for individual labs</span>
+<span class="sd">        :returns zscorefig: The distances and scores plot as a matplotlib figure object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sets_to_plot</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">plot_range</span><span class="p">]</span><span class="c1">#self._scan_plot_range(plot_range)</span>
+    
+        <span class="n">numplots</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sets_to_plot</span><span class="p">)</span>
+        
+        <span class="n">ylabel</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;Average Diameter Distance, $\^</span><span class="si">{D}</span><span class="s2">_{i,k}$&quot;</span>
+        <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Data set ID&#39;</span>
+        <span class="k">if</span> <span class="n">numplots</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">ylabel</span> <span class="o">=</span> <span class="n">ylabel</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;r D&#39;</span><span class="p">,</span><span class="s1">&#39;r</span><span class="se">\n</span><span class="s1">D&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">numplots</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">ylabel</span> <span class="o">=</span> <span class="n">ylabel</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        
+        <span class="n">gs_kw</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">wspace</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span><span class="n">hspace</span><span class="o">=</span><span class="mf">0.4</span><span class="p">)</span>
+        
+        <span class="c1">#By default, share axes among all plots</span>
+        <span class="n">sharex</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">olm0</span> <span class="o">=</span> <span class="n">sets_to_plot</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">metric</span><span class="p">]</span><span class="o">.</span><span class="n">outlier_mask</span><span class="o">.</span><span class="n">shape</span> <span class="c1">#Get the shape of the outlier mask of the first group</span>
+        <span class="c1">#Check to make sure the outlier masks are the same length</span>
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">sets_to_plot</span><span class="p">:</span>
+            <span class="c1">#Check if the lablists of each experimental group are the same length</span>
+            <span class="n">mask_same</span> <span class="o">=</span> <span class="n">group</span><span class="p">[</span><span class="n">metric</span><span class="p">]</span><span class="o">.</span><span class="n">outlier_mask</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">olm0</span>
+            <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="n">mask_same</span><span class="p">):</span>
+                <span class="n">sharex</span> <span class="o">=</span> <span class="kc">False</span> <span class="c1">#Can&#39;t share axes if different number of labs</span>
+        
+        <span class="n">zscorefig</span><span class="p">,</span><span class="n">zscoreax</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_standard_plot</span><span class="p">(</span><span class="n">numplots</span><span class="p">,</span><span class="n">numcols</span><span class="p">,</span><span class="n">gs_kw</span><span class="o">=</span><span class="n">gs_kw</span><span class="p">,</span>
+                                                 <span class="n">xlabel_buffer</span><span class="o">=</span><span class="n">xlabel_buffer</span><span class="p">,</span>
+                                                 <span class="n">ylabel_buffer</span><span class="o">=</span><span class="n">ylabel_buffer</span><span class="p">,</span>
+                                                  <span class="n">ylabel</span><span class="o">=</span><span class="n">ylabel</span><span class="p">,</span><span class="n">xlabel</span><span class="o">=</span><span class="n">xlabel</span><span class="p">,</span>
+                                                  <span class="n">add_buffer</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                                  <span class="n">sharex</span><span class="o">=</span><span class="n">sharex</span><span class="p">,</span><span class="n">sharey</span><span class="o">=</span><span class="kc">True</span><span class="p">,)</span>
+        
+        <span class="c1">#Ticks</span>
+        <span class="n">pdf_locator</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">MaxNLocator</span><span class="p">(</span><span class="n">nbins</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="n">prune</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">ax</span><span class="p">,</span><span class="n">group</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">zscoreax</span><span class="p">,</span><span class="n">sets_to_plot</span><span class="p">):</span>
+            <span class="n">group</span><span class="o">.</span><span class="n">plot_zscores</span><span class="p">(</span><span class="n">metric</span><span class="p">,</span><span class="n">ax</span><span class="p">,</span><span class="n">rotation</span><span class="o">=</span><span class="n">rotation</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.98</span><span class="p">,</span><span class="mf">1.02</span><span class="p">,</span><span class="n">group</span><span class="o">.</span><span class="n">name</span><span class="p">,</span><span class="n">ha</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">,</span><span class="n">va</span><span class="o">=</span><span class="s1">&#39;bottom&#39;</span><span class="p">,</span><span class="n">transform</span><span class="o">=</span><span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_major_locator</span><span class="p">(</span><span class="n">pdf_locator</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">sharex</span><span class="p">:</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">([])</span>
+
+        <span class="k">return</span> <span class="n">zscorefig</span></div>
+    
+    
+<div class="viewcode-block" id="Project.plot_projected_zscores"><a class="viewcode-back" href="../Project.html#project.Project.plot_projected_zscores">[docs]</a>    <span class="k">def</span> <span class="nf">plot_projected_zscores</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">distance_metrics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">xlabel_buffer</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">rotation</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Plots the projected statistical distances annotated with the corresponding laboratory-level Z scores.</span>
+<span class="sd">        </span>
+<span class="sd">        :key distance_metrics: A list of the distance metrics for which statistical distances will be plotted. If None, plot statistical distances for all metrics in this project</span>
+<span class="sd">        :key xlabel_buffer: Space allocated for x-axis labels (in inches)</span>
+<span class="sd">        :key rotation: Specifies the orientation of the z-score labels for individual labs</span>
+<span class="sd">        :returns: zscorefig, the projected statistical distances plot as a matplotlib figure object</span>
+<span class="sd">        &quot;&quot;&quot;</span>       
+        <span class="c1">#Distance metrics that will be used</span>
+        <span class="k">if</span> <span class="n">distance_metrics</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> 
+            <span class="n">interlabs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interlab_arrays</span>
+            <span class="c1">#[print(interlab) for interlab in interlabs]</span>
+            <span class="n">distance_metrics</span> <span class="o">=</span> <span class="p">[</span><span class="n">interlab</span> <span class="k">for</span> <span class="n">interlab</span> <span class="ow">in</span> <span class="n">interlabs</span><span class="p">]</span>
+        <span class="n">interlabs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="n">distance_metrics</span><span class="p">:</span>
+            <span class="n">interlabs</span> <span class="o">+=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">interlab_arrays</span><span class="p">[</span><span class="n">metric</span><span class="p">]]</span>
+        
+        <span class="c1">#Number of plots, size of figure</span>
+        <span class="n">numplots</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">interlabs</span><span class="p">)</span>
+        <span class="n">numcols</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">numrows</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="n">numplots</span> <span class="o">+</span> <span class="n">numcols</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">/</span> <span class="n">numcols</span><span class="p">))</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="mi">5</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="mi">1</span>
+        
+        <span class="c1">#Xlabel and ylabel</span>
+        <span class="n">ylabel</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;Projected Statistical Distance, $||T_L||$&quot;</span>
+        <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Data set ID&#39;</span>
+        
+        <span class="c1">#Collapese ylabel if there aren&#39;t many rows</span>
+        <span class="k">if</span> <span class="n">numplots</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">ylabel</span> <span class="o">=</span> <span class="n">ylabel</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;l D&#39;</span><span class="p">,</span><span class="s1">&#39;l</span><span class="se">\n</span><span class="s1">D&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">numplots</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">ylabel</span> <span class="o">=</span> <span class="n">ylabel</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        
+        <span class="n">gs_kw</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">wspace</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span><span class="n">hspace</span><span class="o">=</span><span class="mf">0.4</span><span class="p">)</span>
+        
+        <span class="c1">#By default, share axes among all plots</span>
+        <span class="n">sharex</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="c1">#Check to make sure the outlier masks are the same length</span>
+        <span class="k">for</span> <span class="n">interlab</span> <span class="ow">in</span> <span class="n">interlabs</span><span class="p">:</span>
+            <span class="c1">#Check if the lablists are the same length</span>
+            <span class="n">mask_same</span> <span class="o">=</span> <span class="n">interlab</span><span class="o">.</span><span class="n">outlier_mask</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">interlabs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">outlier_mask</span><span class="o">.</span><span class="n">shape</span>
+            <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="n">mask_same</span><span class="p">):</span>
+                <span class="n">sharex</span> <span class="o">=</span> <span class="kc">False</span> <span class="c1">#Can&#39;t share axes if different number of labs</span>
+        
+        <span class="n">zscorefig</span><span class="p">,</span><span class="n">zscoreax_array</span> <span class="o">=</span> <span class="n">plu</span><span class="o">.</span><span class="n">make_grid_plot</span><span class="p">(</span><span class="n">numrows</span><span class="p">,</span><span class="n">numcols</span><span class="p">,</span><span class="n">plotsize</span><span class="o">=</span><span class="p">(</span><span class="n">width</span><span class="p">,</span><span class="n">height</span><span class="p">),</span>
+                                                  <span class="n">xlabel_buffer</span><span class="o">=</span><span class="n">xlabel_buffer</span><span class="p">,</span>
+                                                  <span class="n">ylabel</span><span class="o">=</span><span class="n">ylabel</span><span class="p">,</span><span class="n">xlabel</span><span class="o">=</span><span class="n">xlabel</span><span class="p">,</span>
+                                                  <span class="n">add_buffer</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                                  <span class="n">sharex</span><span class="o">=</span><span class="n">sharex</span><span class="p">,</span><span class="n">sharey</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">gridspec_kw</span><span class="o">=</span><span class="n">gs_kw</span><span class="p">)</span>
+        <span class="n">zscoreax</span> <span class="o">=</span> <span class="n">zscoreax_array</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="s1">&#39;F&#39;</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">ax</span><span class="p">,</span><span class="n">interlab</span><span class="p">,</span><span class="n">metric</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">zscoreax</span><span class="p">,</span><span class="n">interlabs</span><span class="p">,</span><span class="n">distance_metrics</span><span class="p">):</span>
+            <span class="n">interlab</span><span class="o">.</span><span class="n">plot_zscores</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span><span class="n">rotation</span><span class="o">=</span><span class="n">rotation</span><span class="p">)</span>
+            
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">metric</span><span class="p">)</span>
+            <span class="n">axis_locator</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">MaxNLocator</span><span class="p">(</span><span class="n">nbins</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">prune</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_major_locator</span><span class="p">(</span><span class="n">axis_locator</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">sharex</span><span class="p">:</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">([])</span>
+        
+        <span class="k">return</span> <span class="n">zscorefig</span></div>
+    
+<div class="viewcode-block" id="Project.plot_zscore_loadings"><a class="viewcode-back" href="../Project.html#project.Project.plot_zscore_loadings">[docs]</a>    <span class="k">def</span> <span class="nf">plot_zscore_loadings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">distance_metrics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">xlabel_buffer</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Plots the principal component loadings for the statistical distances</span>
+<span class="sd">        </span>
+<span class="sd">        :key distance_metrics: A list of the distance metrics for which loadings will be plotted. If None, plot loadings for all metrics in this project</span>
+<span class="sd">        :key xlabel_buffer: Space allocated for x-axis labels (in inches)</span>
+<span class="sd">        :returns: loadfig, the projected statistical loadings plot as a matplotlib figure object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="c1">#Distance metrics that will be used</span>
+        <span class="k">if</span> <span class="n">distance_metrics</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> 
+            <span class="n">interlabs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interlab_arrays</span>
+            <span class="c1">#[print(interlab) for interlab in interlabs]</span>
+            <span class="n">distance_metrics</span> <span class="o">=</span> <span class="p">[</span><span class="n">interlab</span> <span class="k">for</span> <span class="n">interlab</span> <span class="ow">in</span> <span class="n">interlabs</span><span class="p">]</span>
+        <span class="n">interlabs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="n">distance_metrics</span><span class="p">:</span>
+            <span class="n">interlabs</span> <span class="o">+=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">interlab_arrays</span><span class="p">[</span><span class="n">metric</span><span class="p">]]</span>
+        
+        <span class="c1">#Number of plots, size of figure</span>
+        <span class="n">numplots</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">interlabs</span><span class="p">)</span>
+        <span class="n">numcols</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">numrows</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="n">numplots</span> <span class="o">+</span> <span class="n">numcols</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">/</span> <span class="n">numcols</span><span class="p">))</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="mi">5</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="mi">1</span>
+        
+        <span class="n">ylabel</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;Component Value&quot;</span>
+        <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Cluster ID&#39;</span>
+        <span class="c1">#if numplots &lt; 2:</span>
+        <span class="c1">#    ylabel = ylabel.replace(&#39; &#39;,&#39;\n&#39;)</span>
+        
+        <span class="n">gs_kw</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">wspace</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span><span class="n">hspace</span><span class="o">=</span><span class="mf">0.4</span><span class="p">)</span>
+        
+        <span class="n">loadfig</span><span class="p">,</span><span class="n">loadax_array</span> <span class="o">=</span> <span class="n">plu</span><span class="o">.</span><span class="n">make_grid_plot</span><span class="p">(</span><span class="n">numrows</span><span class="p">,</span><span class="n">numcols</span><span class="p">,</span><span class="n">plotsize</span><span class="o">=</span><span class="p">(</span><span class="n">width</span><span class="p">,</span><span class="n">height</span><span class="p">),</span>
+                                                  <span class="n">xlabel_buffer</span><span class="o">=</span><span class="n">xlabel_buffer</span><span class="p">,</span>
+                                                  <span class="n">ylabel</span><span class="o">=</span><span class="n">ylabel</span><span class="p">,</span><span class="n">xlabel</span><span class="o">=</span><span class="n">xlabel</span><span class="p">,</span>
+                                                  <span class="n">add_buffer</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                                  <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">sharey</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">gridspec_kw</span><span class="o">=</span><span class="n">gs_kw</span><span class="p">)</span>
+        <span class="n">loadax</span> <span class="o">=</span> <span class="n">loadax_array</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="s1">&#39;F&#39;</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">ax</span><span class="p">,</span><span class="n">interlab</span><span class="p">,</span><span class="n">metric</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">loadax</span><span class="p">,</span><span class="n">interlabs</span><span class="p">,</span><span class="n">distance_metrics</span><span class="p">):</span>
+            <span class="n">interlab</span><span class="o">.</span><span class="n">plot_components</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+            
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">metric</span><span class="p">)</span>
+            <span class="n">axis_locator</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">MaxNLocator</span><span class="p">(</span><span class="n">nbins</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">prune</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_major_locator</span><span class="p">(</span><span class="n">axis_locator</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">loadfig</span></div>
+    
+<div class="viewcode-block" id="Project.plot_zscore_outliers"><a class="viewcode-back" href="../Project.html#project.Project.plot_zscore_outliers">[docs]</a>    <span class="k">def</span> <span class="nf">plot_zscore_outliers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">metric</span><span class="p">,</span><span class="n">y_component</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Plots the principal component scores for each lab along with the final distribution used to calculate the outliers</span>
+<span class="sd">        </span>
+<span class="sd">        :param metric: The metric used to calculate the interspectral distances</span>
+<span class="sd">        :key y_component: Which principal component to use on the Y axis, if not the first</span>
+<span class="sd">        :key text: Whether to label the plot with the name of the </span>
+<span class="sd">        :returns: zscore_outliers_fig, the Z score outlier plot as a matplotlib figure object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">zscore_outliers_fig</span><span class="p">,</span><span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interlab_arrays</span><span class="p">[</span><span class="n">metric</span><span class="p">]</span><span class="o">.</span><span class="n">plot_outliers</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span><span class="n">y_component</span><span class="o">=</span><span class="n">y_component</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">text</span><span class="p">:</span>
+            <span class="n">zscore_outliers_fig</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.85</span><span class="p">,</span><span class="mf">0.8</span><span class="p">,</span><span class="n">metric</span><span class="p">,</span><span class="n">ha</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">,</span><span class="n">va</span><span class="o">=</span><span class="s1">&#39;top&#39;</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span><span class="n">transform</span><span class="o">=</span><span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">zscore_outliers_fig</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+        </div>
+        <div class="sidebar">
+          <h3>Table of Contents</h3>
+          <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Project.html">The interlab Project class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Subobjects.html">Subobjects within the Project class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Metrics.html">Distance metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../analysis_demo.html">Example interlaboratory study</a></li>
+</ul>
+
+          <div role="search">
+            <h3 style="margin-top: 1.5em;">Search</h3>
+            <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+            </form>
+          </div>
+        </div>
+        <div class="clearer"></div>
+      </div>
+    </div>
+
+    <div class="footer-wrapper">
+      <div class="footer">
+        <div class="left">
+          <div role="navigation" aria-label="related navigaton">
+            <a href="../genindex.html" title="General Index"
+              >index</a>
+          </div>
+          <div role="note" aria-label="source link">
+          </div>
+        </div>
+
+        <div class="right">
+          
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, David A. Sheen.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.0.
+    </div>
+        </div>
+        <div class="clearer"></div>
+      </div>
+    </div>
+
+  </body>
+</html>

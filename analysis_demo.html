@@ -1,0 +1,351 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Example interlaboratory study &#8212; interlab 0.1.1 documentation</title>
+    <link rel="stylesheet" href="_static/agogo.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://pages.nist.gov/nist-header-footer/js/jquery-1.9.0.min.js"></script>
+    <script type="text/javascript" src="https://pages.nist.gov/nist-header-footer/js/nist-header-footer.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Distance metrics" href="Metrics.html" /> 
+  </head><body>
+    <div class="header-wrapper" role="banner">
+      <div class="header">
+        <div class="headertitle"><a
+          href="index.html">interlab 0.1.1 documentation</a></div>
+        <div class="rel" role="navigation" aria-label="related navigation">
+          <a href="Metrics.html" title="Distance metrics"
+             accesskey="P">previous</a> |
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a>
+        </div>
+       </div>
+    </div>
+
+    <div class="content-wrapper">
+      <div class="content">
+        <div class="document">
+            
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="example-interlaboratory-study">
+<h1>Example interlaboratory study<a class="headerlink" href="#example-interlaboratory-study" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="imports">
+<h2>Imports<a class="headerlink" href="#imports" title="Permalink to this headline">¶</a></h2>
+<p>Import the mumpce interface and the interface to Cantera.</p>
+<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">interlab</span> <span class="k">as</span> <span class="nn">inl</span>
+</pre></div>
+</div>
+<p>Import Numerical Python and Pandas</p>
+<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="creating-a-project">
+<h2>Creating a Project<a class="headerlink" href="#creating-a-project" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="reading-project-metadata">
+<h3>Reading project metadata<a class="headerlink" href="#reading-project-metadata" title="Permalink to this headline">¶</a></h3>
+<p><cite>interlab</cite> is agnostic to the way that your data is arranged. All that’s required is that you have the experimental measurements divided logically into groups, where each group represents all the measurements of one sample. The exact way you do this is up to you; this example shows how to do create a Project using Pandas and an Excel workbook.</p>
+<p>We’ve decided to remove some of the NMR data in the region of the water signal, so let’s do that.</p>
+<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">range_to_use</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">959</span><span class="p">))</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1058</span><span class="p">,</span><span class="mi">1860</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Read the Excel workbook that contains the project data. We’re using Pandas to read all the sheets of this workbook. This will result in a dictionary of Pandas DataFrame objects that we will have to parse.</p>
+<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">df_dict</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="s1">&#39;syn_data.xlsx&#39;</span><span class="p">,</span><span class="n">sheet_name</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Each sheet in the workbook corresponds to the NMR spectra from one particular sample. The name of each sheet is the name of the sample, which are then the keys of our <cite>df_dict</cite>. We’ll use these keys as the keys for the various dictionaries we make before we create the project.</p>
+<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Spectrum_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">df</span> <span class="ow">in</span> <span class="n">df_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">Spectrum_names</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="s1">&#39;S1a&#39;</span><span class="p">,</span> <span class="s1">&#39;S1b&#39;</span><span class="p">,</span> <span class="s1">&#39;S1c&#39;</span><span class="p">,</span> <span class="s1">&#39;S1d&#39;</span><span class="p">,</span> <span class="s1">&#39;S1e&#39;</span><span class="p">,</span> <span class="s1">&#39;S1f&#39;</span><span class="p">,</span> <span class="s1">&#39;S2&#39;</span><span class="p">,</span> <span class="s1">&#39;S3&#39;</span><span class="p">,</span> <span class="s1">&#39;S4&#39;</span><span class="p">,</span> <span class="s1">&#39;S5&#39;</span><span class="p">,</span> <span class="s1">&#39;S6&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>The sheets are arranged such that each row corresponds to an NMR bin and each column represents the NMR measurements from one facility. We’ll extract the index values as the X data for our spectra and the column values as our list of facility labels. The X data have to be the same across all measurements, so we don’t save this as a dictionary. However, the facility labels might be different, because not every facility may have values for every experiment.</p>
+<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Labels_dict</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">df</span> <span class="ow">in</span> <span class="n">df_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">peakPPM_full</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">range_to_use</span><span class="p">]</span>
+    <span class="n">Labels</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">Labels_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">Labels</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">peakPPM_full</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="s1">&#39;0115&#39;</span> <span class="s1">&#39;0122&#39;</span> <span class="s1">&#39;0258&#39;</span> <span class="s1">&#39;0333&#39;</span> <span class="s1">&#39;0711&#39;</span> <span class="s1">&#39;0714&#39;</span> <span class="s1">&#39;2861&#39;</span> <span class="s1">&#39;7042&#39;</span> <span class="s1">&#39;8865&#39;</span> <span class="s1">&#39;9541&#39;</span><span class="p">]</span>
+<span class="p">[</span><span class="mf">9.9975</span> <span class="mf">9.9925</span> <span class="mf">9.9875</span> <span class="o">...</span> <span class="mf">0.2125</span> <span class="mf">0.2075</span> <span class="mf">0.2025</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Here, we define which metrics we’ll be using for the interlab analysis</p>
+<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">jeffries</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;Symmetric Kullback-Liebler&#39;</span>
+<span class="n">jensen</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;Jensen-Shannon&#39;</span>
+<span class="n">hellinger</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;Hellinger&#39;</span>
+<span class="n">mahalanobis</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;Mahalanobis&#39;</span>
+<span class="n">nmr_distance_metrics</span> <span class="o">=</span> <span class="p">[</span><span class="nb">dict</span><span class="p">(</span><span class="n">metric</span><span class="o">=</span><span class="n">mahalanobis</span><span class="p">,</span><span class="n">function</span><span class="o">=</span><span class="s1">&#39;mahalanobis&#39;</span><span class="p">),</span>
+                        <span class="nb">dict</span><span class="p">(</span><span class="n">metric</span><span class="o">=</span><span class="n">hellinger</span><span class="p">,</span><span class="n">function</span><span class="o">=</span><span class="n">inl</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">hellinger_hyp</span><span class="p">),</span>
+                        <span class="nb">dict</span><span class="p">(</span><span class="n">metric</span><span class="o">=</span><span class="n">jeffries</span><span class="p">,</span><span class="n">function</span><span class="o">=</span><span class="n">inl</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">jeffries</span><span class="p">),</span>
+                        <span class="nb">dict</span><span class="p">(</span><span class="n">metric</span><span class="o">=</span><span class="n">jensen</span><span class="p">,</span><span class="n">function</span><span class="o">=</span><span class="n">inl</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">jensen_hyp</span><span class="p">)</span>
+                       <span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="reading-project-data">
+<h3>Reading project data<a class="headerlink" href="#reading-project-data" title="Permalink to this headline">¶</a></h3>
+<p>Now that the metadata have all been read, we will actually read the data and create the data dictionaries. We extract the raw data for each experiment group directly from the dataframe, after we remove the water-signal data that we didn’t want. This data goes into <cite>rawdata_dict</cite>. We use <cite>fix_spectrum</cite> to remove negative and zero values, then we sum-normalize the spectra. This goes into <cite>data_dict</cite>, which will actually be used for the interlab analysis.</p>
+<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rawdata_dict</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">data_dict</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">df</span> <span class="ow">in</span> <span class="n">df_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">raw_values</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">range_to_use</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">rawdata_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">raw_values</span>
+
+    <span class="n">normalized_values</span> <span class="o">=</span> <span class="n">inl</span><span class="o">.</span><span class="n">fix_spectrum</span><span class="p">(</span><span class="n">raw_values</span><span class="p">)</span>
+    <span class="n">data_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">normalized_values</span><span class="o">.</span><span class="n">T</span><span class="o">/</span><span class="n">normalized_values</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="creating-the-project">
+<h3>Creating the Project<a class="headerlink" href="#creating-the-project" title="Permalink to this headline">¶</a></h3>
+<p>Now we have enough data to create the Project object. When created, the Project will read the <cite>rawdata_dict</cite>, <cite>data_dict</cite>, and <cite>Labels_dict</cite>, associating each element of these dictionaries with an <cite>ExperimentGroup</cite> object.</p>
+<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">synthetic_samples_project</span> <span class="o">=</span> <span class="n">inl</span><span class="o">.</span><span class="n">Project</span><span class="p">(</span><span class="n">x_data_list</span><span class="o">=</span><span class="n">peakPPM_full</span><span class="p">,</span>
+                                         <span class="n">Sample_names</span><span class="o">=</span><span class="n">Spectrum_names</span><span class="p">,</span>
+                                         <span class="n">Data_set_names</span><span class="o">=</span><span class="n">Labels_dict</span><span class="p">,</span>
+                                         <span class="n">distance_metrics</span><span class="o">=</span><span class="n">nmr_distance_metrics</span><span class="p">,</span>
+                                         <span class="n">data</span><span class="o">=</span><span class="n">data_dict</span><span class="p">,</span><span class="n">rawdata</span><span class="o">=</span><span class="n">rawdata_dict</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="using-projects-to-run-interlaboratory-analysis">
+<h2>Using Projects to run interlaboratory analysis<a class="headerlink" href="#using-projects-to-run-interlaboratory-analysis" title="Permalink to this headline">¶</a></h2>
+<p>Now that we’ve created the project, we can begin to run the interlab analysis.</p>
+<div class="section" id="interspectral-distance-matrices">
+<h3>Interspectral distance matrices<a class="headerlink" href="#interspectral-distance-matrices" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="interspectral-covariance-matrix">
+<h4>Interspectral covariance matrix<a class="headerlink" href="#interspectral-covariance-matrix" title="Permalink to this headline">¶</a></h4>
+<p>Since we’re using Mahalanobis distance as a metric, we need to calculate the inverse covariance matrix. As there are fewer observations than variables, we know the covariance matrix will be singular, so we need to use the singular value decomposition to calculate it.</p>
+<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">process_mahalanobis</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="distance-matrices">
+<h4>Distance matrices<a class="headerlink" href="#distance-matrices" title="Permalink to this headline">¶</a></h4>
+<p>Now we calculate the distance matrices for each group,</p>
+<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">set_distances</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>We can plot the spectral data and the distance matrices. Note that, if <cite>plot_range</cite> isn’t specified, this function will plot all of them</p>
+<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">f</span> <span class="o">=</span> <span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">plot_distance_fig</span><span class="p">(</span><span class="n">linecolor</span><span class="o">=</span><span class="s1">&#39;b&#39;</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;BuPu&#39;</span><span class="p">,</span>
+                                                <span class="n">plot_range</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;S2&#39;</span><span class="p">,</span><span class="s1">&#39;S3&#39;</span><span class="p">,</span><span class="s1">&#39;S6&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<img alt="_images/analysis_demo_24_0.png" src="_images/analysis_demo_24_0.png" />
+</div>
+</div>
+<div class="section" id="sample-level-scores-and-outliers">
+<h3>Sample-level scores and outliers<a class="headerlink" href="#sample-level-scores-and-outliers" title="Permalink to this headline">¶</a></h3>
+<p>Fit the scores to the distances, and then find the outliers.</p>
+<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">fit_zscores</span><span class="p">()</span>
+<span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">find_outliers</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>We can also plot histograms and bar charts of the average interspectral distances. These distributions are where the Z-scores come from.</p>
+<p>Again, <cite>plot_range</cite> is optional.</p>
+<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">f</span> <span class="o">=</span> <span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">plot_histograms</span><span class="p">(</span><span class="n">jeffries</span><span class="p">,</span>
+                                              <span class="n">numcols</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                              <span class="n">plot_range</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;S2&#39;</span><span class="p">,</span><span class="s1">&#39;S3&#39;</span><span class="p">,</span><span class="s1">&#39;S6&#39;</span><span class="p">])</span>
+<span class="n">f</span> <span class="o">=</span> <span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">plot_zscore_distances</span><span class="p">(</span><span class="n">jeffries</span><span class="p">,</span>
+                                                    <span class="n">numcols</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                                    <span class="n">plot_range</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;S2&#39;</span><span class="p">,</span><span class="s1">&#39;S3&#39;</span><span class="p">,</span><span class="s1">&#39;S6&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<img alt="_images/analysis_demo_28_0.png" src="_images/analysis_demo_28_0.png" />
+<img alt="_images/analysis_demo_28_1.png" src="_images/analysis_demo_28_1.png" />
+</div>
+<div class="section" id="interlaboratory-statistical-projection">
+<h3>Interlaboratory statistical projection<a class="headerlink" href="#interlaboratory-statistical-projection" title="Permalink to this headline">¶</a></h3>
+<p>The Z-scores can then be cast as an array, which we will then use to calculate the lab-level scores and determine outliers. Note how, in this case, we are not screening outlier spectra before we perform our analysis.</p>
+<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">extract_matrices</span><span class="p">(</span><span class="n">screen_outliers</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">plot_zscores_heatmap</span><span class="p">(</span><span class="n">metric</span><span class="o">=</span><span class="n">jeffries</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;BuPu&#39;</span><span class="p">)</span>
+<span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">plot_zscores_heatmap</span><span class="p">(</span><span class="n">screen_outliers</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">metric</span><span class="o">=</span><span class="n">jeffries</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;BuPu&#39;</span><span class="p">)</span>
+<span class="n">f</span> <span class="o">=</span> <span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">plot_zscore_loadings</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="_images/analysis_demo_30_2.png" src="_images/analysis_demo_30_2.png" />
+<img alt="_images/analysis_demo_30_3.png" src="_images/analysis_demo_30_3.png" />
+<img alt="_images/analysis_demo_30_4.png" src="_images/analysis_demo_30_4.png" />
+</div>
+<div class="section" id="laboratory-level-scoring-and-outliers">
+<h3>Laboratory-level scoring and outliers<a class="headerlink" href="#laboratory-level-scoring-and-outliers" title="Permalink to this headline">¶</a></h3>
+<p>Find the outliers and plot the lab-level Z-scores as well as the statistical projection</p>
+<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">find_lab_outliers</span><span class="p">(</span><span class="n">recursive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">support_fraction</span><span class="o">=</span><span class="mf">0.6</span><span class="p">)</span>
+<span class="n">f</span> <span class="o">=</span> <span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">plot_projected_zscores</span><span class="p">()</span>
+<span class="n">f</span> <span class="o">=</span> <span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">plot_zscore_outliers</span><span class="p">(</span><span class="n">jeffries</span><span class="p">)</span>
+<span class="n">f</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s1">&#39;equal&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/analysis_demo_32_2.png" src="_images/analysis_demo_32_2.png" />
+<img alt="_images/analysis_demo_32_3.png" src="_images/analysis_demo_32_3.png" />
+<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">f</span> <span class="o">=</span> <span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">plot_zscore_outliers</span><span class="p">(</span><span class="n">hellinger</span><span class="p">)</span>
+<span class="n">f</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s1">&#39;equal&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/analysis_demo_33_0.png" src="_images/analysis_demo_33_0.png" />
+<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">f</span> <span class="o">=</span> <span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">plot_zscore_outliers</span><span class="p">(</span><span class="n">mahalanobis</span><span class="p">)</span>
+<span class="n">f</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s1">&#39;equal&#39;</span><span class="p">)</span>
+<span class="n">f</span> <span class="o">=</span> <span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">plot_zscore_outliers</span><span class="p">(</span><span class="n">mahalanobis</span><span class="p">,</span><span class="n">y_component</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">f</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s1">&#39;equal&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/analysis_demo_34_0.png" src="_images/analysis_demo_34_0.png" />
+<img alt="_images/analysis_demo_34_1.png" src="_images/analysis_demo_34_1.png" />
+</div>
+</div>
+<div class="section" id="accessing-data-within-a-project">
+<h2>Accessing data within a Project<a class="headerlink" href="#accessing-data-within-a-project" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="accessing-experiment-groups">
+<h3>Accessing Experiment Groups<a class="headerlink" href="#accessing-experiment-groups" title="Permalink to this headline">¶</a></h3>
+<p>The individual <code class="xref py py-class docutils literal notranslate"><span class="pre">ExperimentGroup</span></code> objects can be accessed by name:</p>
+<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nmrdata</span> <span class="o">=</span> <span class="n">synthetic_samples_project</span><span class="p">[</span><span class="s1">&#39;S6&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">T</span>
+<span class="n">nmrdata</span> <span class="o">=</span> <span class="n">nmrdata</span><span class="o">/</span><span class="n">nmrdata</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">peakPPM_full</span><span class="p">,</span><span class="n">nmrdata</span><span class="o">+</span><span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span><span class="o">+</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">(</span><span class="n">Labels</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">invert_xaxis</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="_images/analysis_demo_36_0.png" src="_images/analysis_demo_36_0.png" />
+<p>You can access multiple <code class="xref py py-class docutils literal notranslate"><span class="pre">ExperimentGroup</span></code> objects by passing a list of names.</p>
+<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">group_list</span> <span class="o">=</span> <span class="n">synthetic_samples_project</span><span class="p">[[</span><span class="s1">&#39;S2&#39;</span><span class="p">,</span><span class="s1">&#39;S6&#39;</span><span class="p">]]</span>
+
+<span class="n">fig</span><span class="p">,</span><span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">group</span><span class="p">,</span><span class="n">ax</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">group_list</span><span class="p">,</span><span class="n">axes</span><span class="p">):</span>
+    <span class="n">nmrdata</span><span class="o">=</span> <span class="n">group</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">nmrdata</span> <span class="o">=</span> <span class="n">nmrdata</span><span class="o">/</span><span class="n">nmrdata</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">peakPPM_full</span><span class="p">,</span><span class="n">nmrdata</span><span class="o">+</span><span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span><span class="o">+</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">(</span><span class="n">Labels</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">invert_xaxis</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="_images/analysis_demo_38_0.png" src="_images/analysis_demo_38_0.png" />
+</div>
+<div class="section" id="accessing-distance-metrics">
+<h3>Accessing Distance Metrics<a class="headerlink" href="#accessing-distance-metrics" title="Permalink to this headline">¶</a></h3>
+<p>The distance metrics for an <code class="xref py py-class docutils literal notranslate"><span class="pre">ExperimentGroup</span></code> can be accessed by array-like indexing:</p>
+<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">synthetic_samples_project</span><span class="p">[</span><span class="s1">&#39;S6&#39;</span><span class="p">,</span><span class="n">jeffries</span><span class="p">]</span><span class="o">.</span><span class="n">distance_matrix</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="n">origin</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;BuPu&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">(</span><span class="n">Labels</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">Labels</span><span class="p">,</span><span class="n">rotation</span><span class="o">=</span><span class="s1">&#39;vertical&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">colorbar</span><span class="o">.</span><span class="n">Colorbar</span> <span class="n">at</span> <span class="mh">0x7f5902d59d30</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<img alt="_images/analysis_demo_40_1.png" src="_images/analysis_demo_40_1.png" />
+<p>Multiple <code class="xref py py-class docutils literal notranslate"><span class="pre">DistanceMetric</span></code> s can be accessed by passing a list.</p>
+<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">metric_list</span> <span class="o">=</span> <span class="n">synthetic_samples_project</span><span class="p">[</span><span class="s1">&#39;S6&#39;</span><span class="p">,[</span><span class="n">jeffries</span><span class="p">,</span><span class="n">hellinger</span><span class="p">]]</span>
+
+<span class="n">fig</span><span class="p">,</span><span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+
+<span class="k">for</span> <span class="n">metric</span><span class="p">,</span><span class="n">ax</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">metric_list</span><span class="p">,</span><span class="n">axes</span><span class="p">):</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">metric</span><span class="o">.</span><span class="n">distance_matrix</span>
+    <span class="n">im</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="n">origin</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;BuPu&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)))</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">(</span><span class="n">Labels</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)))</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">Labels</span><span class="p">,</span><span class="n">rotation</span><span class="o">=</span><span class="s1">&#39;vertical&#39;</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im</span><span class="p">,</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/analysis_demo_42_0.png" src="_images/analysis_demo_42_0.png" />
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+        </div>
+        <div class="sidebar">
+          <h3>Table of Contents</h3>
+          <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Project.html">The interlab Project class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Subobjects.html">Subobjects within the Project class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Metrics.html">Distance metrics</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Example interlaboratory study</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#imports">Imports</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#creating-a-project">Creating a Project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-projects-to-run-interlaboratory-analysis">Using Projects to run interlaboratory analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#accessing-data-within-a-project">Accessing data within a Project</a></li>
+</ul>
+</li>
+</ul>
+
+          <div role="search">
+            <h3 style="margin-top: 1.5em;">Search</h3>
+            <form class="search" action="search.html" method="get">
+                <input type="text" name="q" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+            </form>
+          </div>
+        </div>
+        <div class="clearer"></div>
+      </div>
+    </div>
+
+    <div class="footer-wrapper">
+      <div class="footer">
+        <div class="left">
+          <div role="navigation" aria-label="related navigaton">
+            <a href="Metrics.html" title="Distance metrics"
+              >previous</a> |
+            <a href="genindex.html" title="General Index"
+              >index</a>
+          </div>
+          <div role="note" aria-label="source link">
+              <br/>
+              <a href="_sources/analysis_demo.rst.txt"
+                rel="nofollow">Show Source</a>
+          </div>
+        </div>
+
+        <div class="right">
+          
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, David A. Sheen.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.0.
+    </div>
+        </div>
+        <div class="clearer"></div>
+      </div>
+    </div>
+
+  </body>
+</html>

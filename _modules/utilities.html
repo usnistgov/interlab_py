@@ -1,0 +1,787 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>utilities &#8212; interlab 0.1.1 documentation</title>
+    <link rel="stylesheet" href="../_static/agogo.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://pages.nist.gov/nist-header-footer/js/jquery-1.9.0.min.js"></script>
+    <script type="text/javascript" src="https://pages.nist.gov/nist-header-footer/js/nist-header-footer.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+  </head><body>
+    <div class="header-wrapper" role="banner">
+      <div class="header">
+        <div class="headertitle"><a
+          href="../index.html">interlab 0.1.1 documentation</a></div>
+        <div class="rel" role="navigation" aria-label="related navigation">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a>
+        </div>
+       </div>
+    </div>
+
+    <div class="content-wrapper">
+      <div class="content">
+        <div class="document">
+            
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for utilities</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">scipy</span> <span class="k">as</span> <span class="nn">sp</span>
+<span class="kn">import</span> <span class="nn">scipy.stats</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">matplotlib.gridspec</span> <span class="k">as</span> <span class="nn">gs</span>
+
+<span class="kn">from</span> <span class="nn">sklearn</span> <span class="k">import</span> <span class="n">decomposition</span> <span class="k">as</span> <span class="n">skdecomp</span>
+
+
+<span class="k">def</span> <span class="nf">idfunc</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Returns exactly the function&#39;s positional arguments, ignoring any keyword arguments&#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="c1">#We only passed one argument to the function. We want to return arg, not (arg)</span>
+    <span class="k">return</span> <span class="n">arg</span>
+
+<span class="k">def</span> <span class="nf">g_formatter</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">a</span><span class="p">,</span><span class="n">b</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{:.2e}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;e&#39;</span><span class="p">)</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="n">b</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">b</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span> 
+        <span class="n">mult</span> <span class="o">=</span> <span class="mi">10</span><span class="o">**</span><span class="n">b</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">a</span> <span class="o">*</span> <span class="n">mult</span>
+        <span class="n">prec</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">2</span><span class="o">-</span><span class="n">b</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="sa">r</span><span class="s1">&#39;${:.&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">prec</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;f}$&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="k">return</span> <span class="sa">r</span><span class="s1">&#39;$</span><span class="si">{}</span><span class="s1">\times10^{{</span><span class="si">{}</span><span class="s1">}}$&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">calculate_minmax</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Determines the maximum and minimum (excluding zero) of a data set. Rounds to one significant figure.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data_max</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="n">data_min</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">data</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+    
+    <span class="c1">#Find the power of 10 </span>
+    <span class="n">log_max</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">data_max</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span>
+    <span class="n">log_min</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">data_min</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span>
+    
+    <span class="n">decimals_max</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">log_max</span><span class="p">))</span><span class="o">+</span><span class="mi">1</span>
+    <span class="n">decimals_min</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">log_min</span><span class="p">))</span>
+    
+    <span class="n">significance_max</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="n">decimals_max</span>
+    <span class="n">significance_min</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="n">decimals_min</span>
+    
+    <span class="n">distance_max</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">data_max</span> <span class="o">*</span> <span class="n">significance_max</span><span class="p">)</span><span class="o">/</span><span class="n">significance_max</span>
+    <span class="n">distance_min</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">data_min</span> <span class="o">*</span> <span class="n">significance_min</span><span class="p">)</span><span class="o">/</span><span class="n">significance_min</span>
+    
+    <span class="k">return</span> <span class="n">distance_min</span><span class="p">,</span><span class="n">distance_max</span>
+
+<div class="viewcode-block" id="ExperimentGroup"><a class="viewcode-back" href="../Subobjects.html#utilities.ExperimentGroup">[docs]</a><span class="k">class</span> <span class="nc">ExperimentGroup</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Container for spectral data and methods for analysis</span>
+<span class="sd">    </span>
+<span class="sd">    This object contains a group of spectral measurements that are related, usually by being of the same physical object and having the same structure.</span>
+<span class="sd">    </span>
+<span class="sd">    :key name: The name of the group of measurements.</span>
+<span class="sd">    :key data: Array of data to be used for the interlab analysis</span>
+<span class="sd">    :key rawdata: Array of unprocessed data, if different from data</span>
+<span class="sd">    </span>
+<span class="sd">    :key data_names: List of data sets (labs) with data for each sample</span>
+<span class="sd">    </span>
+<span class="sd">    :key distance_metrics: List of distance metrics. Each metric in this list will be used to create a :py:class:`DistanceMetric` object.</span>
+<span class="sd">    :key distribution_function: Which distribution will be assumed when assigning Z scores to each measurement of a sample.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">xdata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">rawdata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">data_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">distance_metrics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">distribution</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xdata</span> <span class="o">=</span> <span class="n">xdata</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_names</span> <span class="o">=</span> <span class="n">data_names</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distance_metrics</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span> <span class="o">=</span> <span class="n">distribution</span>
+        
+        <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="n">distance_metrics</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">distance_metrics</span> <span class="o">+=</span> <span class="p">[</span>
+                <span class="n">DistanceMetric</span><span class="p">(</span><span class="n">distribution</span><span class="o">=</span><span class="n">distribution</span><span class="p">,</span><span class="o">**</span><span class="n">metric</span><span class="p">)</span>
+            <span class="p">]</span>
+        
+        <span class="k">return</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_metrics</span><span class="p">:</span>
+            <span class="n">names</span><span class="p">[</span><span class="n">item</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">item</span>
+        <span class="k">return</span> <span class="n">names</span>
+    
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        
+        <span class="n">str_rep</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+        
+        <span class="k">return</span> <span class="n">str_rep</span>
+    
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">int</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_metrics</span><span class="p">[</span><span class="n">x</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">x</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;No metric with name &#39;</span> <span class="o">+</span> <span class="n">x</span><span class="p">)</span>
+        
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">metric</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Pass-through to :py:class:`.DistanceMetric`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="p">[</span><span class="n">metric</span><span class="p">]</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">fit_zscores</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">metric</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Pass-through to :py:class:`.DistanceMetric`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="p">[</span><span class="n">metric</span><span class="p">]</span><span class="o">.</span><span class="n">fit_zscores</span><span class="p">()</span>
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">find_outliers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">metric</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Pass-through to :py:class:`.DistanceMetric`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="p">[</span><span class="n">metric</span><span class="p">]</span><span class="o">.</span><span class="n">find_outliers</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">histogram</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">metric</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Pass-through to :py:class:`.DistanceMetric`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="p">[</span><span class="n">metric</span><span class="p">]</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">plot_zscores</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">metric</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Pass-through to :py:class:`.DistanceMetric`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">metric</span><span class="p">]</span><span class="o">.</span><span class="n">plot_zscores</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_names</span><span class="p">)</span><span class="o">-</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_names</span><span class="p">)))</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_names</span><span class="p">,</span><span class="n">rotation</span><span class="o">=</span><span class="s1">&#39;vertical&#39;</span><span class="p">)</span>
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">minmax</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">metric</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="n">metric</span><span class="p">]</span><span class="o">.</span><span class="n">population</span><span class="o">.</span><span class="n">minmax</span><span class="p">()</span>
+    
+    <span class="k">def</span> <span class="nf">plot_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ax</span><span class="p">,</span><span class="n">linecolor</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Line plot of the spectral data in this group.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">numsets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">xdata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">pl</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xdata</span><span class="p">,</span>
+                         <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">T</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">numsets</span><span class="p">))</span><span class="o">-</span><span class="mf">0.5</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+                         <span class="n">linecolor</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">xdata</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">xdata</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">invert_xaxis</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pl</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">T</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">numsets</span><span class="p">))</span><span class="o">-</span><span class="mf">0.5</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span><span class="n">linecolor</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span><span class="n">numsets</span><span class="o">-</span><span class="mf">0.5</span><span class="p">])</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.95</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span><span class="n">ha</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span>
+                 <span class="n">bbox</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">lw</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">pad</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span><span class="n">transform</span><span class="o">=</span><span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">)</span>
+        
+        
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">distance_measure_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ax_row</span><span class="p">,</span><span class="n">plot_data</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">distance_metrics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                              <span class="n">data_kwargs</span><span class="o">=</span><span class="p">{},</span><span class="n">distance_kwargs</span><span class="o">=</span><span class="p">{},</span><span class="n">show_titles</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Heatmaps of interspectral distances and (optionally) line plots of data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="k">if</span> <span class="n">distance_metrics</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">metrics_to_plot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_metrics</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">metrics_to_plot</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_metrics</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">distance_metrics</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">metric</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name</span><span class="p">:</span> 
+                        <span class="n">metrics_to_plot</span> <span class="o">+=</span> <span class="p">[</span><span class="n">metric</span><span class="p">]</span>
+        
+        <span class="n">ax_dist</span> <span class="o">=</span> <span class="n">ax_row</span>
+        <span class="k">if</span> <span class="n">plot_data</span><span class="p">:</span>
+            <span class="n">ax_dist</span> <span class="o">=</span> <span class="n">ax_row</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">plot_data</span><span class="p">(</span><span class="n">ax_row</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="o">**</span><span class="n">data_kwargs</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">metric</span><span class="p">,</span><span class="n">ax</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">metrics_to_plot</span><span class="p">,</span><span class="n">ax_dist</span><span class="p">):</span>
+            
+            <span class="n">im</span> <span class="o">=</span> <span class="n">metric</span><span class="o">.</span><span class="n">distance_plot</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span><span class="n">show_titles</span><span class="o">=</span><span class="n">show_titles</span><span class="p">,</span>
+                                      <span class="o">**</span><span class="n">distance_kwargs</span><span class="p">)</span>
+            
+            <span class="n">cb</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im</span><span class="p">,</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span><span class="n">fraction</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+            <span class="n">cb</span><span class="o">.</span><span class="n">locator</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">MaxNLocator</span><span class="p">(</span><span class="n">nbins</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="n">prune</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span><span class="n">integer</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">min_n_ticks</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+            <span class="n">cb</span><span class="o">.</span><span class="n">update_ticks</span><span class="p">()</span>
+            
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_names</span><span class="p">)))</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">([])</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
+        <span class="n">ax_row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_names</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span></div>
+        
+    
+<div class="viewcode-block" id="DistanceMetric"><a class="viewcode-back" href="../Subobjects.html#utilities.DistanceMetric">[docs]</a><span class="k">class</span> <span class="nc">DistanceMetric</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A distance metric and the interspectral distances associated with it</span>
+<span class="sd">    </span>
+<span class="sd">    :param metric: The name of the metric function</span>
+<span class="sd">    :param function: The metric function. Can be a binary function f(x,y) or a string identifying a metric recognized by :py:func:`scipy.spatial.distance.pdist`</span>
+<span class="sd">    :key distribution_function: Which distribution will be assumed when assigning Z scores to each measurement of a sample.</span>
+<span class="sd">    :key mahalanobis_dict:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">metric</span><span class="p">,</span><span class="n">function</span><span class="p">,</span><span class="n">distribution</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">mahalanobis_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">metric</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">function</span> <span class="o">=</span> <span class="n">function</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span> <span class="o">=</span> <span class="n">distribution</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">distance_matrix</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distance_max</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distance_min</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">population</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mahalanobis_dict</span> <span class="o">=</span> <span class="n">mahalanobis_dict</span>
+        
+        <span class="k">return</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">zscores</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">population</span><span class="o">.</span><span class="n">zscores</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">population</span><span class="o">.</span><span class="n">values</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">outlier_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">population</span><span class="o">.</span><span class="n">outlier_mask</span>
+    
+    <span class="k">def</span> <span class="nf">distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculates the pairwise interspectral distances and the average interspectral distance, then loads the average distances into the :py:class:`Population`.</span>
+<span class="sd">        </span>
+<span class="sd">        :param data: The data for which distances will be calculated</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">VI</span><span class="o">=</span><span class="kc">None</span>
+        <span class="c1">#significant_components=data.shape[0]</span>
+
+        <span class="c1">#Empty containers</span>
+        <span class="n">distance_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">distance_square_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">function</span> <span class="o">==</span> <span class="s1">&#39;mahalanobis&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mahalanobis_dict</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Must define the inverse covariance matrix if metric is mahalanobis&#39;</span><span class="p">)</span>
+            <span class="n">VI</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mahalanobis_dict</span><span class="p">[</span><span class="s1">&#39;VI&#39;</span><span class="p">]</span>
+            <span class="c1">#significant_components=mahalanobis_dict[&#39;significant_components&#39;]</span>
+        
+        <span class="n">distance_condensed</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">spatial</span><span class="o">.</span><span class="n">distance</span><span class="o">.</span><span class="n">pdist</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">function</span><span class="p">,</span><span class="n">VI</span><span class="o">=</span><span class="n">VI</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distance_matrix</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">spatial</span><span class="o">.</span><span class="n">distance</span><span class="o">.</span><span class="n">squareform</span><span class="p">(</span><span class="n">distance_condensed</span><span class="p">)</span>
+        
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">population</span> <span class="o">=</span> <span class="n">Population</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                     <span class="n">distribution</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">distribution</span><span class="p">,</span>
+                                     <span class="n">values</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">distance_matrix</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">distance_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                                    <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distance_min</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">distance_max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">population</span><span class="o">.</span><span class="n">minmax</span><span class="p">()</span>
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">distance_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ax</span><span class="p">,</span><span class="n">vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;Greys&#39;</span><span class="p">,</span><span class="n">origin</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span>
+                      <span class="n">aspect</span><span class="o">=</span><span class="s1">&#39;equal&#39;</span><span class="p">,</span><span class="n">show_titles</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Plots a heatmap of the pairwise interspectral distance.</span>
+<span class="sd">        </span>
+<span class="sd">        :param ax: The axis to make the plot</span>
+<span class="sd">        :key vmin: Passed to imshow</span>
+<span class="sd">        :key vmax: Passed to imshow</span>
+<span class="sd">        :key cmap: Passed to imshow</span>
+<span class="sd">        :key origin: Passed to imshow</span>
+<span class="sd">        :key aspect: Passed to imshow</span>
+<span class="sd">        :key show_titles:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">vmin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">vmin</span><span class="p">,</span><span class="n">vmax</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">minmax</span><span class="p">()</span>
+        
+        <span class="k">if</span> <span class="n">show_titles</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">),</span><span class="n">size</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+        
+        <span class="n">im</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distance_matrix</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span><span class="n">origin</span><span class="o">=</span><span class="n">origin</span><span class="p">,</span>
+                       <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span><span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span><span class="n">aspect</span><span class="o">=</span><span class="n">aspect</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span>
+                      <span class="p">)</span>
+        <span class="k">return</span> <span class="n">im</span>
+        
+    
+    <span class="k">def</span> <span class="nf">fit_zscores</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Pass-through to :py:class:`.Population`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">population</span><span class="o">.</span><span class="n">fit_zscores</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">find_outliers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">recursive</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Pass-through to :py:class:`.Population`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">population</span><span class="o">.</span><span class="n">find_outliers</span><span class="p">(</span><span class="n">recursive</span><span class="o">=</span><span class="n">recursive</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">recursive</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">distance_min</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">distance_max</span> <span class="o">=</span> <span class="n">calculate_minmax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">outlier_mask</span><span class="p">])</span>
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">histogram</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Pass-through to :py:class:`.Population`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">population</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">plot_zscores</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Pass-through to :py:class:`.Population`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">population</span><span class="o">.</span><span class="n">plot_zscores</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ax</span>
+    
+    <span class="k">def</span> <span class="nf">minmax</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">calculate_minmax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distance_matrix</span><span class="p">)</span></div>
+    
+    
+
+<div class="viewcode-block" id="Population"><a class="viewcode-back" href="../Subobjects.html#utilities.Population">[docs]</a><span class="k">class</span> <span class="nc">Population</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Object containing some values, a distribution function fit to those values, and corresponding scores</span>
+<span class="sd">    </span>
+<span class="sd">    :param name: The name assigned to this Population</span>
+<span class="sd">    :key distribution: Which distribution will be assumed when assigning Z scores to laboratories.</span>
+<span class="sd">    :key values: The values to which the distribution will be fit</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">distribution</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">values</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="n">values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span> <span class="o">=</span> <span class="n">distribution</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">zscores</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outlier_mask</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">fit_zscores</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Fit the distribution to the data using a provided mask and calculate the scores of the data</span>
+<span class="sd">        </span>
+<span class="sd">        :key data: The data that will be fit to the distribution. Normally, this is the values of the Population</span>
+<span class="sd">        :key mask: If present, masks some elements of data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span>
+        
+        <span class="n">std</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>        
+        <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span><span class="n">floc</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        
+        <span class="n">rv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
+        
+        <span class="n">CDF</span> <span class="o">=</span> <span class="n">rv</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">zscores</span> <span class="o">=</span> <span class="n">std</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">CDF</span><span class="p">)</span>
+        
+        <span class="c1">#Explicitly calculate Z if the distribution is lognorm, because this will give more reliable results for large Z</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span> <span class="ow">is</span> <span class="n">sp</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">lognorm</span><span class="p">:</span>
+            <span class="n">mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+            <span class="n">stdev</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">zscores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">mean</span><span class="p">))</span> <span class="o">/</span> <span class="n">stdev</span><span class="p">)</span>
+        
+        <span class="c1">#self.outlier_mask = self.zscores &lt; zlimit</span>
+        
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">find_outliers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">recursive</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">support_fraction</span><span class="o">=</span><span class="mf">0.6</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Finds the outliers of the distribution</span>
+<span class="sd">        </span>
+<span class="sd">        :key recursive: If true, finds outliers and refit until all outliers have been removed</span>
+<span class="sd">        :key support_fraction: Fraction of values that are guaranteed to be retained</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">std</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">zlimit</span> <span class="o">=</span> <span class="n">std</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="mf">0.9495</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit_zscores</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+        <span class="n">max_num_outliers</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="mi">1</span><span class="o">-</span><span class="n">support_fraction</span><span class="p">)</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">))</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">outlier_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">recursive</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">outlier_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">zscores</span> <span class="o">&lt;</span> <span class="n">zlimit</span> <span class="c1">#If not recursive, just get all outliers and leave</span>
+            <span class="k">return</span>
+        
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_num_outliers</span><span class="p">):</span>
+            <span class="n">zmax</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">zscores</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">outlier_mask</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="c1">#Get the biggest z-score still considered in the distribution</span>
+            <span class="k">if</span> <span class="n">zmax</span> <span class="o">&lt;</span> <span class="n">zlimit</span><span class="p">:</span> <span class="k">break</span> <span class="c1">#If the biggest z-score is within the zlimit, break from the loop</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">outlier_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">zscores</span> <span class="o">&lt;</span> <span class="n">zmax</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fit_zscores</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">outlier_mask</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outlier_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">zscores</span> <span class="o">&lt;</span> <span class="n">zlimit</span>
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">minmax</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">calculate_minmax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">histogram</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ax</span><span class="p">,</span><span class="n">num_bins</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span><span class="n">max_bin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">min_bin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">xvals</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Plots a histogram of the populations `values` with the corresponding distribution function</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">max_bin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">min_bin</span><span class="p">,</span><span class="n">max_bin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">minmax</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">xvals</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">xvals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">min_bin</span><span class="p">,</span><span class="n">max_bin</span><span class="p">,</span><span class="n">num_bins</span><span class="o">*</span><span class="mi">10</span><span class="p">)</span>
+        
+        <span class="n">binsize</span> <span class="o">=</span> <span class="p">(</span><span class="n">max_bin</span> <span class="o">-</span> <span class="n">min_bin</span><span class="p">)</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">num_bins</span><span class="p">)</span>
+        
+        <span class="n">hist_norm</span><span class="p">,</span><span class="n">bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">,</span><span class="nb">range</span><span class="o">=</span><span class="p">(</span><span class="n">min_bin</span><span class="p">,</span><span class="n">max_bin</span><span class="p">),</span> <span class="n">bins</span><span class="o">=</span><span class="n">num_bins</span><span class="p">,</span><span class="n">density</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">dist_vals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">xvals</span><span class="p">,</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
+        <span class="n">confidence_limit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="mf">0.9495</span><span class="p">,</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
+
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xvals</span><span class="p">,</span><span class="n">dist_vals</span><span class="p">,</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">bins</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="mf">0.5</span><span class="o">*</span><span class="n">binsize</span><span class="p">,</span><span class="n">hist_norm</span><span class="p">,</span><span class="n">binsize</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">confidence_limit</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span><span class="n">ls</span><span class="o">=</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+        
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">plot_zscores</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ax</span><span class="p">,</span><span class="n">rotation</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Plots a bar chart of the populations `values` and annotates it with the corresponding zscores</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="mf">0.4</span>
+        
+        <span class="c1">#Get the number of data sets and number of spectra</span>
+        <span class="n">numsets</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zscores</span><span class="p">)</span>
+        
+        <span class="n">bar_colors</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;w&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">numsets</span>
+        <span class="n">bar_edge</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;k&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">numsets</span>
+        <span class="n">box_trans</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.7</span><span class="p">]</span> <span class="o">*</span> <span class="n">numsets</span>
+        <span class="k">for</span> <span class="n">int_num</span><span class="p">,</span><span class="n">inlier</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outlier_mask</span><span class="p">):</span>
+            <span class="c1">#Color and transparency if the point is an outlier</span>
+            <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="n">inlier</span><span class="p">):</span>
+                <span class="n">bar_colors</span><span class="p">[</span><span class="n">int_num</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;r&#39;</span>
+                <span class="n">bar_edge</span><span class="p">[</span><span class="n">int_num</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;r&#39;</span>
+                <span class="n">box_trans</span><span class="p">[</span><span class="n">int_num</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        
+        <span class="c1">#bar chart of projected distances</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">numsets</span><span class="p">),</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+               <span class="mi">2</span><span class="o">*</span><span class="n">width</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">bar_colors</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="n">bar_edge</span><span class="p">)</span>
+        
+        
+        <span class="p">(</span><span class="n">ymin</span><span class="p">,</span><span class="n">ymax</span><span class="p">)</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_ylim</span><span class="p">()</span>
+        <span class="n">sample_label_pos</span> <span class="o">=</span> <span class="mf">0.05</span><span class="o">*</span><span class="n">ymax</span> <span class="o">+</span> <span class="mf">0.95</span><span class="o">*</span><span class="n">ymin</span>
+        
+        <span class="k">for</span> <span class="n">int_num</span><span class="p">,(</span><span class="n">zscore</span><span class="p">,</span><span class="n">value</span><span class="p">,</span><span class="n">inlier</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zscores</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">outlier_mask</span><span class="p">)):</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">inlier</span><span class="p">):</span> 
+                <span class="n">label_pos</span> <span class="o">=</span> <span class="n">sample_label_pos</span> <span class="o">+</span> <span class="n">value</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">label_pos</span> <span class="o">=</span> <span class="n">sample_label_pos</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">int_num</span><span class="p">,</span><span class="n">label_pos</span><span class="p">,</span>
+                      <span class="n">g_formatter</span><span class="p">(</span><span class="n">zscore</span><span class="p">),</span>
+                      <span class="n">ha</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s1">&#39;bottom&#39;</span><span class="p">,</span>
+                      <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span><span class="n">rotation</span><span class="o">=</span><span class="n">rotation</span><span class="p">,</span>
+                      <span class="n">bbox</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="n">box_trans</span><span class="p">[</span><span class="n">int_num</span><span class="p">],</span><span class="n">lw</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                     <span class="p">)</span>
+        <span class="k">return</span> <span class="n">ax</span></div>
+        
+
+<div class="viewcode-block" id="InterlabArray"><a class="viewcode-back" href="../Subobjects.html#utilities.InterlabArray">[docs]</a><span class="k">class</span> <span class="nc">InterlabArray</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Object for executing interlaboratory comparison</span>
+<span class="sd">    </span>
+<span class="sd">    :key name: Name for the interlab object</span>
+<span class="sd">    :key data_array: Z-score array for the measurements in this interlaboratory study</span>
+<span class="sd">    :key lablist: List of laboratories that have data in this interlab</span>
+<span class="sd">    :key datasets: List of datasets that are in this interlab</span>
+<span class="sd">    :key distribution_function: Which distribution will be assumed when assigning Z scores to laboratories. The default is sp.stats.lognorm</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">data_array</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">lablist</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">datasets</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">distribution_function</span><span class="o">=</span><span class="n">sp</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">lognorm</span><span class="p">,):</span>
+        
+        <span class="c1">#Data array that will be fit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_array</span> <span class="o">=</span> <span class="n">data_array</span>
+        
+        <span class="c1">#Distribution function to fit the zscores to</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distribution_function</span> <span class="o">=</span> <span class="n">distribution_function</span>
+        
+        <span class="c1">#Metric name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        
+        <span class="c1">#PCA object</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pca</span> <span class="o">=</span> <span class="n">skdecomp</span><span class="o">.</span><span class="n">PCA</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pca_scores</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">population</span> <span class="o">=</span> <span class="n">Population</span><span class="p">(</span><span class="s1">&#39;Projected statistical distance&#39;</span><span class="p">,</span>
+                                     <span class="n">distribution</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">distribution_function</span><span class="p">)</span>
+        
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">zscores</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">population</span><span class="o">.</span><span class="n">zscores</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">population</span><span class="o">.</span><span class="n">values</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">outlier_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">population</span><span class="o">.</span><span class="n">outlier_mask</span>
+    
+    <span class="k">def</span> <span class="nf">fit_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Fits the sklearn.pca object and then removes the mean-centering. Calculates projected statistical distance and stores that in :py:class:`Population`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1">#Fit PCA</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pca</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_array</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        
+        <span class="c1">#Find where the zero point of our z-score space lies in PCA space</span>
+        <span class="n">effective_zero</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pca</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pca</span><span class="o">.</span><span class="n">mean_</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)))</span>
+        
+        <span class="c1">#Transform the scores into the translated PCA space</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pca_scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pca</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_array</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">-</span> <span class="n">effective_zero</span>
+        
+        <span class="c1">#Get the active components (minimum number of components that explains at least 95% of variance)</span>
+        <span class="c1">#self.active_components = self.pca.explained_variance_ratio_.cumsum() &lt; 0.95</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">active_components</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pca</span><span class="o">.</span><span class="n">explained_variance_ratio_</span> <span class="o">&gt;</span> <span class="mf">0.01</span>
+        <span class="c1"># ^^^ this definition actually has one fewer component than what we want so we have to do some manipulation</span>
+        
+        <span class="c1">#print(self.active_components)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">active_components</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span> <span class="c1">#Obviously there should be at least one active component</span>
+        <span class="c1">#self.active_components = np.roll(self.active_components,1) #Move the active component mask one element. Combined with the statement above, this ensures that the second component will be active, and we want two active components.</span>
+        <span class="c1">#self.active_components[0] = True #Obviously the first component should be active</span>
+        
+        <span class="c1">#print(self.active_components)</span>
+        <span class="c1">#Store the projected statistical distance</span>
+        <span class="n">num_active_components</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active_components</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">population</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pca_scores</span><span class="p">[:,</span><span class="mi">0</span><span class="p">:</span><span class="n">num_active_components</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">return</span>
+    
+    <span class="c1">#def plot_zscore_heatmap(self):</span>
+        
+    
+    <span class="k">def</span> <span class="nf">fit_zscores</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Pass-through for :py:class:`.Population.fit_zscores`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1">#Fit the projected statistical distance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">population</span><span class="o">.</span><span class="n">fit_zscores</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">find_outliers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Pass-through for :py:class:`.Population.find_outliers`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">population</span><span class="o">.</span><span class="n">find_outliers</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">plot_components</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ax</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Plots the principal component loadings for the statistical distances</span>
+<span class="sd">        </span>
+<span class="sd">        :param ax: A list of the distance metrics for which loadings will be plotted. If None, plot loadings for all metrics in this project</span>
+<span class="sd">        :key xlabel_buffer: Space allocated for x-axis labels (in inches)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">PCAsign</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pca</span><span class="o">.</span><span class="n">components_</span><span class="p">[</span><span class="mi">0</span><span class="p">,:]</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+        
+        <span class="c1">#Get the number of active components in the PCA</span>
+        <span class="n">num_active_components</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active_components</span><span class="p">)</span>
+        <span class="c1">#print(self.name,num_active_components,self.active_components)</span>
+
+        <span class="c1">#Calculate the positions where the bars will go</span>
+        <span class="n">total_width</span> <span class="o">=</span> <span class="mf">0.4</span> <span class="c1"># total width available for all components</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="n">total_width</span><span class="o">/</span><span class="n">num_active_components</span> <span class="c1">#width allocated to each component</span>
+        <span class="n">positions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">total_width</span><span class="p">,</span><span class="n">total_width</span><span class="p">,</span><span class="mi">2</span><span class="o">*</span><span class="n">width</span><span class="p">)</span> <span class="c1">#list of offsets for all components</span>
+
+        <span class="c1">#Create the spectrum of colors that will be used for the plot</span>
+        <span class="n">bar_properties</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mf">1.0</span><span class="o">/</span><span class="n">num_active_components</span><span class="p">)</span>
+
+        <span class="c1">#Get the number of data sets and number of spectra</span>
+        <span class="n">numsets</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lablist</span><span class="p">)</span>
+        <span class="n">numspecs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">datasets</span><span class="p">)</span>
+
+
+        <span class="c1">#Plot the principal components</span>
+        <span class="k">for</span> <span class="n">component_num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_active_components</span><span class="p">):</span>
+            <span class="c1">#intensity = bar_properties[component_num]</span>
+
+            <span class="c1">#Intensity corresponds to the explained variance ratio</span>
+            <span class="n">intensity</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">pca</span><span class="o">.</span><span class="n">explained_variance_ratio_</span><span class="p">[</span><span class="n">component_num</span><span class="p">]</span>
+
+            <span class="c1">#Edges should be darker to provide contrast for lighter bars</span>
+            <span class="n">edge_intensity</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">pca</span><span class="o">.</span><span class="n">explained_variance_ratio_</span><span class="p">[</span><span class="n">component_num</span><span class="p">])</span><span class="o">/</span><span class="mf">1.3</span>
+
+            <span class="n">bar_colors</span> <span class="o">=</span> <span class="p">[[</span><span class="n">intensity</span><span class="p">]</span> <span class="o">*</span> <span class="mi">3</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lablist</span><span class="p">)</span>
+            <span class="n">edge_colors</span> <span class="o">=</span> <span class="p">[[</span><span class="n">edge_intensity</span><span class="p">]</span> <span class="o">*</span> <span class="mi">3</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lablist</span><span class="p">)</span>
+
+            <span class="n">position</span> <span class="o">=</span> <span class="n">positions</span><span class="p">[</span><span class="n">component_num</span><span class="p">]</span>
+            <span class="n">im</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">datasets</span><span class="p">))</span><span class="o">+</span><span class="n">position</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">pca</span><span class="o">.</span><span class="n">components_</span><span class="p">[</span><span class="n">component_num</span><span class="p">,:]</span><span class="o">*</span><span class="n">PCAsign</span><span class="p">,</span>
+                            <span class="mi">2</span><span class="o">*</span><span class="n">width</span><span class="p">,</span>
+                            <span class="n">alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">bar_colors</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="n">edge_colors</span><span class="p">)</span>
+        
+        <span class="c1">#X tick labels</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">numspecs</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span> <span class="c1"># We&#39;ll want 2 labels for the explained variance ratios</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">numspecs</span><span class="p">))</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">datasets</span><span class="p">,</span><span class="n">rotation</span><span class="o">=</span><span class="s1">&#39;vertical&#39;</span><span class="p">)</span>
+        
+        <span class="c1">#Draw dividing lines between components</span>
+        <span class="k">for</span> <span class="n">spec_num</span><span class="p">,</span><span class="n">spectrum</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">datasets</span><span class="p">):</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">spec_num</span><span class="o">+</span><span class="mf">0.5</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span><span class="n">ls</span><span class="o">=</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+        
+        <span class="c1">#Print the explained variance ratios</span>
+        <span class="c1">#(ymin,ymax) = ax.get_ylim()</span>
+        <span class="c1">#center = (ymax+ymin)/2.0</span>
+        <span class="c1">#interval = (ymin-ymax)/(num_active_components + 1)</span>
+        <span class="c1">#positions = np.arange(ymax+interval,ymin,interval)</span>
+        <span class="n">interval</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="n">num_active_components</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">positions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">interval</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">interval</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">component_number</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_active_components</span><span class="p">):</span>
+            <span class="n">component_label_position</span> <span class="o">=</span> <span class="n">positions</span><span class="p">[</span><span class="n">component_number</span><span class="p">]</span>
+            <span class="n">component_horizontal_position</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">datasets</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">datasets</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">componentscore</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%4.1f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pca</span><span class="o">.</span><span class="n">explained_variance_ratio_</span><span class="p">[</span><span class="n">component_number</span><span class="p">]</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+            <span class="n">componentscore_string</span> <span class="o">=</span> <span class="n">componentscore</span> <span class="o">+</span> <span class="s2">&quot; %&quot;</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">component_horizontal_position</span><span class="p">,</span><span class="n">component_label_position</span><span class="p">,</span><span class="n">componentscore_string</span><span class="p">,</span>
+                        <span class="n">ha</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span><span class="n">transform</span><span class="o">=</span><span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">)</span>
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">plot_zscores</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Plots the projected statistical distances annotated with the corresponding laboratory-level Z scores. Pass-through to :py:class:Population.plot_zscores.</span>
+<span class="sd">        &quot;&quot;&quot;</span> 
+        <span class="n">ax</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">population</span><span class="o">.</span><span class="n">plot_zscores</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lablist</span><span class="p">)</span><span class="o">-</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lablist</span><span class="p">)))</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lablist</span><span class="p">,</span><span class="n">rotation</span><span class="o">=</span><span class="s1">&#39;vertical&#39;</span><span class="p">)</span>
+        <span class="k">return</span>
+    
+    
+    <span class="k">def</span> <span class="nf">plot_outliers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ax</span><span class="p">,</span><span class="n">y_component</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Plots the principal component scores for each lab along with the final distribution used to calculate the outliers</span>
+<span class="sd">        </span>
+<span class="sd">        :param ax: The axis on which the plot will be made</span>
+<span class="sd">        :key y_component: Which principal component to use on the Y axis, if not the first</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">zscores_projected</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pca_scores</span>
+        <span class="n">z_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outlier_mask</span>
+        
+        <span class="c1">#Create the scatterplot, blue for outliers and red for inliers</span>
+        <span class="n">scatterplot</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pca_scores</span><span class="p">[</span><span class="n">z_mask</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span>
+                                     <span class="bp">self</span><span class="o">.</span><span class="n">pca_scores</span><span class="p">[</span><span class="n">z_mask</span><span class="p">,</span><span class="n">y_component</span><span class="p">],</span>
+                                         <span class="n">c</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span><span class="n">edgecolors</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span><span class="n">zorder</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">scatterplot</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pca_scores</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">invert</span><span class="p">(</span><span class="n">z_mask</span><span class="p">),</span><span class="mi">0</span><span class="p">],</span>
+                                     <span class="bp">self</span><span class="o">.</span><span class="n">pca_scores</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">invert</span><span class="p">(</span><span class="n">z_mask</span><span class="p">),</span><span class="n">y_component</span><span class="p">],</span>
+                                         <span class="n">c</span><span class="o">=</span><span class="s1">&#39;b&#39;</span><span class="p">,</span><span class="n">edgecolors</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span><span class="n">zorder</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+
+        <span class="c1">#Get the x and y limits of the plot</span>
+        <span class="p">(</span><span class="n">xmin</span><span class="p">,</span><span class="n">xmax</span><span class="p">)</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_xlim</span><span class="p">()</span>
+        <span class="p">(</span><span class="n">ymin</span><span class="p">,</span><span class="n">ymax</span><span class="p">)</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_ylim</span><span class="p">()</span>
+
+        <span class="c1">#Make the grid </span>
+        <span class="n">numgrid</span> <span class="o">=</span> <span class="mi">60</span>
+
+        <span class="n">xstep</span> <span class="o">=</span> <span class="p">(</span><span class="n">xmax</span><span class="o">-</span><span class="n">xmin</span><span class="p">)</span><span class="o">/</span><span class="n">numgrid</span>
+        <span class="n">ystep</span> <span class="o">=</span> <span class="p">(</span><span class="n">ymax</span><span class="o">-</span><span class="n">ymin</span><span class="p">)</span><span class="o">/</span><span class="n">numgrid</span>
+
+        <span class="n">xdata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">xmin</span><span class="p">,</span><span class="n">xmax</span><span class="p">,</span><span class="n">xstep</span><span class="p">)</span>
+        <span class="n">ydata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">ymin</span><span class="p">,</span><span class="n">ymax</span><span class="p">,</span><span class="n">ystep</span><span class="p">)</span>
+
+        <span class="n">xx</span><span class="p">,</span><span class="n">yy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">xdata</span><span class="p">,</span><span class="n">ydata</span><span class="p">)</span>
+        <span class="n">dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">xx</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">yy</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="n">rv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">population</span><span class="o">.</span><span class="n">distribution</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">population</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
+        <span class="n">std</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">population</span><span class="o">.</span><span class="n">distribution</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">pdf_for_plot</span> <span class="o">=</span> <span class="n">std</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">rv</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">dist</span><span class="p">))</span>
+
+        <span class="n">levelsc</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
+        <span class="n">levelsf</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mf">3.5</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mf">4.5</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
+
+        <span class="n">levelsc</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">std</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="mf">0.95</span><span class="p">)))</span> <span class="o">+</span> <span class="p">[</span><span class="n">std</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="mf">0.95</span><span class="p">)]</span>
+        <span class="n">levelsf</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.25</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="n">std</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="mf">0.95</span><span class="p">),</span><span class="mf">0.5</span><span class="p">))</span> <span class="o">+</span> <span class="p">[</span><span class="n">std</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="mf">0.95</span><span class="p">)]</span>
+
+        <span class="n">cformats</span> <span class="o">=</span>  <span class="p">[</span><span class="s1">&#39;</span><span class="si">{:1.0f}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">levelsc</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">cformats</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;</span><span class="si">{:3.1f}</span><span class="s1">&#39;</span><span class="p">]</span>
+
+        <span class="n">cformats_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span><span class="n">fmt_str</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span><span class="n">fmt_str</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">levelsc</span><span class="p">,</span><span class="n">cformats</span><span class="p">)</span> <span class="p">}</span>
+        <span class="n">ccolors</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;w&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">levelsc</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">ccolors</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;k&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">levelsc</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="n">ctr1</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span><span class="n">yy</span><span class="p">,</span><span class="n">pdf_for_plot</span><span class="p">,</span><span class="n">extend</span><span class="o">=</span><span class="s1">&#39;min&#39;</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;Greys_r&#39;</span><span class="p">,</span><span class="n">levels</span><span class="o">=</span><span class="n">levelsf</span><span class="p">,</span><span class="n">zorder</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">ctr2</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">contour</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span><span class="n">yy</span><span class="p">,</span><span class="n">pdf_for_plot</span><span class="p">,</span><span class="n">extend</span><span class="o">=</span><span class="s1">&#39;neither&#39;</span><span class="p">,</span><span class="n">colors</span><span class="o">=</span><span class="n">ccolors</span><span class="p">,</span><span class="n">levels</span><span class="o">=</span><span class="n">levelsc</span><span class="p">,</span><span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">contourlabels</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">clabel</span><span class="p">(</span><span class="n">ctr2</span><span class="p">,</span><span class="n">fmt</span><span class="o">=</span><span class="n">cformats_dict</span><span class="p">,</span><span class="n">colors</span><span class="o">=</span><span class="n">ccolors</span><span class="p">)</span>
+        <span class="n">component1score</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%5.2f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pca</span><span class="o">.</span><span class="n">explained_variance_ratio_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="n">component2score</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%5.2f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pca</span><span class="o">.</span><span class="n">explained_variance_ratio_</span><span class="p">[</span><span class="n">y_component</span><span class="p">]</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="n">xaxislabel</span> <span class="o">=</span> <span class="s1">&#39;Component 1: &#39;</span> <span class="o">+</span> <span class="n">component1score</span> <span class="o">+</span> <span class="s2">&quot; %&quot;</span>
+        <span class="n">yaxislabel</span> <span class="o">=</span> <span class="s1">&#39;Component &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y_component</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span><span class="s1">&#39;: &#39;</span> <span class="o">+</span> <span class="n">component2score</span> <span class="o">+</span> <span class="s2">&quot; %&quot;</span>
+
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">xaxislabel</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">yaxislabel</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">j</span><span class="p">,</span><span class="n">labeltext</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lablist</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">z_mask</span><span class="p">[</span><span class="n">j</span><span class="p">]:</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pca_scores</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="mf">1.0</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">pca_scores</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">y_component</span><span class="p">],</span>
+                        <span class="n">labeltext</span><span class="p">,</span>
+                        <span class="n">ha</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">,</span><span class="n">va</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span>
+                        <span class="n">size</span><span class="o">=</span><span class="s1">&#39;9&#39;</span><span class="p">,</span>
+                        <span class="n">bbox</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">))</span></div>
+        
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+        </div>
+        <div class="sidebar">
+          <h3>Table of Contents</h3>
+          <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Project.html">The interlab Project class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Subobjects.html">Subobjects within the Project class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Metrics.html">Distance metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../analysis_demo.html">Example interlaboratory study</a></li>
+</ul>
+
+          <div role="search">
+            <h3 style="margin-top: 1.5em;">Search</h3>
+            <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+            </form>
+          </div>
+        </div>
+        <div class="clearer"></div>
+      </div>
+    </div>
+
+    <div class="footer-wrapper">
+      <div class="footer">
+        <div class="left">
+          <div role="navigation" aria-label="related navigaton">
+            <a href="../genindex.html" title="General Index"
+              >index</a>
+          </div>
+          <div role="note" aria-label="source link">
+          </div>
+        </div>
+
+        <div class="right">
+          
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, David A. Sheen.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.0.
+    </div>
+        </div>
+        <div class="clearer"></div>
+      </div>
+    </div>
+
+  </body>
+</html>

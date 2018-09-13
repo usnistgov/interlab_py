@@ -1,0 +1,506 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>The interlab Project class &#8212; interlab 0.1.1 documentation</title>
+    <link rel="stylesheet" href="_static/agogo.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://pages.nist.gov/nist-header-footer/js/jquery-1.9.0.min.js"></script>
+    <script type="text/javascript" src="https://pages.nist.gov/nist-header-footer/js/nist-header-footer.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Subobjects within the Project class" href="Subobjects.html" />
+    <link rel="prev" title="Interlab: A python module for consensus analysis in interlaboratory studies" href="index.html" /> 
+  </head><body>
+    <div class="header-wrapper" role="banner">
+      <div class="header">
+        <div class="headertitle"><a
+          href="index.html">interlab 0.1.1 documentation</a></div>
+        <div class="rel" role="navigation" aria-label="related navigation">
+          <a href="index.html" title="Interlab: A python module for consensus analysis in interlaboratory studies"
+             accesskey="P">previous</a> |
+          <a href="Subobjects.html" title="Subobjects within the Project class"
+             accesskey="N">next</a> |
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a>
+        </div>
+       </div>
+    </div>
+
+    <div class="content-wrapper">
+      <div class="content">
+        <div class="document">
+            
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="the-interlab-project-class">
+<h1>The interlab Project class<a class="headerlink" href="#the-interlab-project-class" title="Permalink to this headline">¶</a></h1>
+<p>An <cite>interlab</cite> analysis is logically divided into interlaboratory comparison projects. A project is represented by a <a class="reference internal" href="#project.Project" title="project.Project"><code class="xref py py-class docutils literal notranslate"><span class="pre">Project</span></code></a> object which contains the following items:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Sample labels that represent the physical objects that have been distributed for measurement</li>
+<li>Dataset labels that identify the origin of each set of measurement results</li>
+<li>Experimental spectral data containing the measurement results on the objects that have been analyzed</li>
+<li>Interspectral distance functions that will be used to calculate the spread of the data and identify outliers</li>
+<li>A distribution function that will be used to estimate outliers. By default, this is a lognormal distribution, but can be any distribution function supported by <code class="xref py py-class docutils literal notranslate"><span class="pre">scipy.stats.rv_continuous</span></code>.</li>
+</ul>
+</div></blockquote>
+<p>The intent is that the user will interact primarily with the <a class="reference internal" href="#project.Project" title="project.Project"><code class="xref py py-class docutils literal notranslate"><span class="pre">Project</span></code></a> object, loading it with the necessary information to conduct its analysis and then using the built in methods. Documentation for the <a class="reference internal" href="Subobjects.html#utilities.ExperimentGroup" title="utilities.ExperimentGroup"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExperimentGroup</span></code></a> and <a class="reference internal" href="Subobjects.html#utilities.InterlabArray" title="utilities.InterlabArray"><code class="xref py py-class docutils literal notranslate"><span class="pre">InterlabArray</span></code></a> objects is included separately.</p>
+<div class="section" id="creating-projects">
+<h2>Creating Projects<a class="headerlink" href="#creating-projects" title="Permalink to this headline">¶</a></h2>
+<p>A blank <a class="reference internal" href="#project.Project" title="project.Project"><code class="xref py py-class docutils literal notranslate"><span class="pre">Project</span></code></a> can be instantiated with no arguments:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_project</span> <span class="o">=</span> <span class="n">interlab</span><span class="o">.</span><span class="n">Project</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This creates a <a class="reference internal" href="#project.Project" title="project.Project"><code class="xref py py-class docutils literal notranslate"><span class="pre">Project</span></code></a> with no data or metadata of any kind. This information can be loaded later, or it can be provided when the code is initialized:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_project</span> <span class="o">=</span> <span class="n">interlab</span><span class="o">.</span><span class="n">Project</span><span class="p">(</span><span class="n">x_data_list</span><span class="o">=</span><span class="n">xdata</span><span class="p">,</span>
+                              <span class="n">Sample_names</span><span class="o">=</span><span class="n">Sample_names</span><span class="p">,</span>
+                              <span class="n">Data_set_names</span><span class="o">=</span><span class="n">Data_set_names_dict</span><span class="p">,</span>
+                              <span class="n">distance_metrics</span><span class="o">=</span><span class="n">distance_metric_list</span><span class="p">,</span>
+                              <span class="n">rdata</span><span class="o">=</span><span class="n">data_dict</span><span class="p">,</span><span class="n">rawdata</span><span class="o">=</span><span class="n">rawdata_dict</span>
+                              <span class="p">)</span>
+</pre></div>
+</div>
+<p>When the <a class="reference internal" href="#project.Project" title="project.Project"><code class="xref py py-class docutils literal notranslate"><span class="pre">Project</span></code></a> object is created, it will automatically create <a class="reference internal" href="Subobjects.html#utilities.ExperimentGroup" title="utilities.ExperimentGroup"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExperimentGroup</span></code></a>, <a class="reference internal" href="Subobjects.html#utilities.DistanceMetric" title="utilities.DistanceMetric"><code class="xref py py-class docutils literal notranslate"><span class="pre">DistanceMetric</span></code></a>, and <a class="reference internal" href="Subobjects.html#utilities.Population" title="utilities.Population"><code class="xref py py-class docutils literal notranslate"><span class="pre">Population</span></code></a> objects for the experiment groups and distance metrics that have been assigned.</p>
+<div class="section" id="defining-distance-metrics">
+<h3>Defining distance metrics<a class="headerlink" href="#defining-distance-metrics" title="Permalink to this headline">¶</a></h3>
+<p>The distance metrics are defined by a list of dictionaries. Each dictionary must have the name of the metric as a text string and the function used to call the metric. The function must either be a callable that accepts two inputs or a string that is recognized by <code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.spatial.pdist()</span></code>. The following are two examples:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">jeffries</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;Symmetric Kullback-Liebler&#39;</span>
+<span class="n">mahalanobis</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;Mahalanobis&#39;</span>
+<span class="n">nmr_distance_metrics</span> <span class="o">=</span> <span class="p">[</span><span class="nb">dict</span><span class="p">(</span><span class="n">metric</span><span class="o">=</span><span class="n">mahalanobis</span><span class="p">,</span><span class="n">function</span><span class="o">=</span><span class="s1">&#39;mahalanobis&#39;</span><span class="p">),</span> <span class="c1">#&#39;mahalanobis&#39; is recognized by pdist()</span>
+                        <span class="nb">dict</span><span class="p">(</span><span class="n">metric</span><span class="o">=</span><span class="n">jeffries</span><span class="p">,</span><span class="n">function</span><span class="o">=</span><span class="n">interlab</span><span class="o">.</span><span class="n">jeffries</span><span class="p">),</span> <span class="c1">#qmet.jeffries is a distance included in this package</span>
+                       <span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="project-workflow">
+<h2>Project workflow<a class="headerlink" href="#project-workflow" title="Permalink to this headline">¶</a></h2>
+<p>Once the project has been created with the basic data and metadata needed for the analysis, the basic workflow is as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_project</span><span class="o">.</span><span class="n">process_mahalanobis</span><span class="p">()</span> <span class="c1">#This calculated the mean and covariance of the samples and is only needed if the Mahalanobis distance is included in the project</span>
+<span class="n">my_project</span><span class="o">.</span><span class="n">set_distances</span><span class="p">()</span>
+<span class="n">my_project</span><span class="o">.</span><span class="n">fit_zscores</span><span class="p">()</span>
+<span class="n">my_project</span><span class="o">.</span><span class="n">find_outliers</span><span class="p">()</span>
+<span class="n">my_project</span><span class="o">.</span><span class="n">extract_matrices</span><span class="p">()</span>
+<span class="n">my_project</span><span class="o">.</span><span class="n">find_lab_outliers</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This will, in order:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Calculate the interspectral distances</li>
+<li>Fit the project’s distribution function to the distance data and calculate the corresponding scores.</li>
+<li>Identify outliers within each spectral population</li>
+<li>Conduct a principal components analysis on the scores and compute the projected statistical distance</li>
+<li>Use the projected statistical distance to determine the data set outliers.</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="documentation">
+<h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="method-summary">
+<h3>Method summary<a class="headerlink" href="#method-summary" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="analysis-functions">
+<h4>Analysis functions<a class="headerlink" href="#analysis-functions" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#project.Project" title="project.Project"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Project</span></code></a>([data,&nbsp;rawdata,&nbsp;distance_metrics,&nbsp;…])</td>
+<td>The top-level project class for the interlaboratory comparison module</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#project.Project.set_distances" title="project.Project.set_distances"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Project.set_distances</span></code></a>()</td>
+<td>Calculates the interspectral distances for each experiment group and metric</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#project.Project.fit_zscores" title="project.Project.fit_zscores"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Project.fit_zscores</span></code></a>()</td>
+<td>Fits the sample-level zscores for each experiment group and metric.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#project.Project.find_outliers" title="project.Project.find_outliers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Project.find_outliers</span></code></a>(**kwargs)</td>
+<td>Finds the sample outliers for each experiment group and metric.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#project.Project.extract_matrices" title="project.Project.extract_matrices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Project.extract_matrices</span></code></a>(**kwargs)</td>
+<td>Runs <code class="xref py py-func docutils literal notranslate"><span class="pre">extract_experimental_matrix()</span></code> for each experimental matrix</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#project.Project.extract_experimental_matrix" title="project.Project.extract_experimental_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Project.extract_experimental_matrix</span></code></a>([sets,&nbsp;…])</td>
+<td>Extracts the zscore data from the dict-of-vectors format and casts it as a 2D array.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#project.Project.fit_lab_zscores" title="project.Project.fit_lab_zscores"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Project.fit_lab_zscores</span></code></a>()</td>
+<td>Fits the lab-level zscores for each metric.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#project.Project.find_lab_outliers" title="project.Project.find_lab_outliers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Project.find_lab_outliers</span></code></a>(**kwargs)</td>
+<td>Finds the lab outliers for each metric.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="plotting-functions">
+<h4>Plotting functions<a class="headerlink" href="#plotting-functions" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#project.Project.plot_distance_fig" title="project.Project.plot_distance_fig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Project.plot_distance_fig</span></code></a>([plot_range,&nbsp;…])</td>
+<td>For each sample, generates the following plots:</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#project.Project.plot_zscore_distances" title="project.Project.plot_zscore_distances"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Project.plot_zscore_distances</span></code></a>(metric[,&nbsp;…])</td>
+<td>Plots a bar chart of the average interspectral distance for each sample, annotated with the generalized Z score for each sample</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#project.Project.plot_histograms" title="project.Project.plot_histograms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Project.plot_histograms</span></code></a>(metric[,&nbsp;…])</td>
+<td>Plots a histogram of the average interspectral distance for each sample, along with the corresponding fit</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#project.Project.plot_zscore_outliers" title="project.Project.plot_zscore_outliers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Project.plot_zscore_outliers</span></code></a>(metric[,&nbsp;…])</td>
+<td>Plots the principal component scores for each lab along with the final distribution used to calculate the outliers</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#project.Project.plot_projected_zscores" title="project.Project.plot_projected_zscores"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Project.plot_projected_zscores</span></code></a>([…])</td>
+<td>Plots the projected statistical distances annotated with the corresponding laboratory-level Z scores.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#project.Project.plot_zscore_loadings" title="project.Project.plot_zscore_loadings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Project.plot_zscore_loadings</span></code></a>([…])</td>
+<td>Plots the principal component loadings for the statistical distances</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="full-documentation">
+<h3>Full documentation<a class="headerlink" href="#full-documentation" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="project.Project">
+<em class="property">class </em><code class="descclassname">project.</code><code class="descname">Project</code><span class="sig-paren">(</span><em>data=None</em>, <em>rawdata=None</em>, <em>distance_metrics=None</em>, <em>Sample_names=None</em>, <em>Data_set_names=None</em>, <em>x_data_list=None</em>, <em>range_to_use=None</em>, <em>distribution_function=&lt;scipy.stats._continuous_distns.lognorm_gen object&gt;</em>, <em>outlier_dist=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/project.html#Project"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#project.Project" title="Permalink to this definition">¶</a></dt>
+<dd><p>The top-level project class for the interlaboratory comparison module</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Key Sample_names:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">List of sample names, used as keys for the dictionaries of data set names and processed and raw data. Each key in this list will correspond to a <code class="xref py py-class docutils literal notranslate"><span class="pre">ExperimentGroup</span></code> object</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Key Data_set_names:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">Dictionary of data sets (labs) with data for each sample</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Key data:</th><td class="field-body">Dictionary of data to be used for the interlab analysis</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Key rawdata:</th><td class="field-body">Dictionary of unprocessed data, if different from data</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Key distance_metrics:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">List of distance metrics. Each metric in this list will be used to create a <code class="xref py py-class docutils literal notranslate"><span class="pre">DistanceMetric</span></code> object within each <code class="xref py py-class docutils literal notranslate"><span class="pre">ExperimentGroup</span></code> object</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Key x_data_list:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">The list of x data in the data array. For 2D data, this is not used</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Key range_to_use:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">Used to screen certain parts of the spectral data from consideration in the experimental comparison</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Key distribution_function:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">Which distribution will be assumed when assigning Z scores to each measurement of a sample. The default is sp.stats.lognorm</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Key outlier_dist:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">Which distribution will be assumed when detecting outliers. The default is the same as distribution_function</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="project.Project.set_distances">
+<code class="descname">set_distances</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project.html#Project.set_distances"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#project.Project.set_distances" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the interspectral distances for each experiment group and metric</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="project.Project.fit_zscores">
+<code class="descname">fit_zscores</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project.html#Project.fit_zscores"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#project.Project.fit_zscores" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fits the sample-level zscores for each experiment group and metric.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="project.Project.find_outliers">
+<code class="descname">find_outliers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project.html#Project.find_outliers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#project.Project.find_outliers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds the sample outliers for each experiment group and metric.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="project.Project.extract_matrices">
+<code class="descname">extract_matrices</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project.html#Project.extract_matrices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#project.Project.extract_matrices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs <code class="xref py py-func docutils literal notranslate"><span class="pre">extract_experimental_matrix()</span></code> for each experimental matrix</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="project.Project.extract_experimental_matrix">
+<code class="descname">extract_experimental_matrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project.html#Project.extract_experimental_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#project.Project.extract_experimental_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracts the zscore data from the dict-of-vectors format and casts it as a 2D array.</p>
+<p>The dictionary of sample-level z-scores is recast as an array, with one dimension corresponding to sample names and the other corresponding to laboratory.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Key sets:</th><td class="field-body">Sets to extract for the interlab comparison</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Key metric:</th><td class="field-body">Distance metric that will be used</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Key screen_outliers:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">Whether to remove outlier measurements before imputing missing values</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Key imputation_axis:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">Axis along which to impute missing values</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="project.Project.fit_lab_zscores">
+<code class="descname">fit_lab_zscores</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project.html#Project.fit_lab_zscores"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#project.Project.fit_lab_zscores" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fits the lab-level zscores for each metric.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="project.Project.find_lab_outliers">
+<code class="descname">find_lab_outliers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project.html#Project.find_lab_outliers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#project.Project.find_lab_outliers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds the lab outliers for each metric.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="project.Project.plot_distance_fig">
+<code class="descname">plot_distance_fig</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project.html#Project.plot_distance_fig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#project.Project.plot_distance_fig" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>For each sample, generates the following plots:</dt>
+<dd><ul class="first last simple">
+<li>A plot of the spectra generated for that sample by each laboratory</li>
+<li>For each metric, a heat map plot of the interspectral distance matrix</li>
+</ul>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Key plot_range:</th><td class="field-body">An iterable of integers specifying which sample labels to plot</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Key cmap:</th><td class="field-body">The color map that will be used for the distance heat maps</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Key linecolor:</th><td class="field-body">The line color that will be used for the spectral data</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Key distance_metrics:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">A list of the distance metrics for which heat maps will be plotted. If None, plot heat maps for all metrics in this project</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Key plot_data:</th><td class="field-body">Boolean that tells whether the raw spectral data will be plotted</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Key wspace:</th><td class="field-body">Horizontal spacing between the heat maps</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Key ylabel_buffer:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">Space allocated for the y axis label (in inches)</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Key rightlabel_buffer:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">Space allocated for the colorbar label (in inches)</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Key xlabel_buffer:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body"></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">distance_fig, the distance measure figure matplotlib object.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="project.Project.plot_zscore_distances">
+<code class="descname">plot_zscore_distances</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project.html#Project.plot_zscore_distances"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#project.Project.plot_zscore_distances" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots a bar chart of the average interspectral distance for each sample, annotated with the generalized Z score for each sample</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>metric</strong> – The metric for which the distances will be plotted</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Key plot_range:</th><td class="field-body">An iterable of integers specifying which sample labels to plot</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Key numcols:</th><td class="field-body">The number of columns in the distance plot</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Key xlabel_buffer:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">Space allocated for x-axis labels (in inches)</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Key ylabel_buffer:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">Space allocated for y-axis labels (in inches)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Key rotation:</th><td class="field-body">Specifies the orientation of the z-score labels for individual labs</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Returns zscorefig:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">The distances and scores plot as a matplotlib figure object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="project.Project.plot_histograms">
+<code class="descname">plot_histograms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project.html#Project.plot_histograms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#project.Project.plot_histograms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots a histogram of the average interspectral distance for each sample, along with the corresponding fit</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>metrics</strong> – The metric for which the distances will be plotted</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Key plot_range:</th><td class="field-body">An iterable of integers specifying which sample labels to plot</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Key numcols:</th><td class="field-body">The number of columns in the distance plot</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Key xlabel_buffer:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">Space allocated for x-axis labels (in inches)</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Key rotation:</th><td class="field-body">Specifies the orientation of the z-score labels for individual labs</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns pdffig:</th><td class="field-body">The distances and scores plot as a matplotlib figure object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="project.Project.plot_zscore_outliers">
+<code class="descname">plot_zscore_outliers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project.html#Project.plot_zscore_outliers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#project.Project.plot_zscore_outliers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots the principal component scores for each lab along with the final distribution used to calculate the outliers</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>metric</strong> – The metric used to calculate the interspectral distances</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Key y_component:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">Which principal component to use on the Y axis, if not the first</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Key text:</th><td class="field-body">Whether to label the plot with the name of the</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">zscore_outliers_fig, the Z score outlier plot as a matplotlib figure object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="project.Project.plot_projected_zscores">
+<code class="descname">plot_projected_zscores</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project.html#Project.plot_projected_zscores"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#project.Project.plot_projected_zscores" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots the projected statistical distances annotated with the corresponding laboratory-level Z scores.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Key distance_metrics:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">A list of the distance metrics for which statistical distances will be plotted. If None, plot statistical distances for all metrics in this project</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Key xlabel_buffer:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">Space allocated for x-axis labels (in inches)</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Key rotation:</th><td class="field-body">Specifies the orientation of the z-score labels for individual labs</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">zscorefig, the projected statistical distances plot as a matplotlib figure object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="project.Project.plot_zscore_loadings">
+<code class="descname">plot_zscore_loadings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/project.html#Project.plot_zscore_loadings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#project.Project.plot_zscore_loadings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots the principal component loadings for the statistical distances</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Key distance_metrics:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">A list of the distance metrics for which loadings will be plotted. If None, plot loadings for all metrics in this project</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Key xlabel_buffer:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">Space allocated for x-axis labels (in inches)</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">loadfig, the projected statistical loadings plot as a matplotlib figure object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+        </div>
+        <div class="sidebar">
+          <h3>Table of Contents</h3>
+          <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">The interlab Project class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#creating-projects">Creating Projects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#project-workflow">Project workflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#documentation">Documentation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Subobjects.html">Subobjects within the Project class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Metrics.html">Distance metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="analysis_demo.html">Example interlaboratory study</a></li>
+</ul>
+
+          <div role="search">
+            <h3 style="margin-top: 1.5em;">Search</h3>
+            <form class="search" action="search.html" method="get">
+                <input type="text" name="q" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+            </form>
+          </div>
+        </div>
+        <div class="clearer"></div>
+      </div>
+    </div>
+
+    <div class="footer-wrapper">
+      <div class="footer">
+        <div class="left">
+          <div role="navigation" aria-label="related navigaton">
+            <a href="index.html" title="Interlab: A python module for consensus analysis in interlaboratory studies"
+              >previous</a> |
+            <a href="Subobjects.html" title="Subobjects within the Project class"
+              >next</a> |
+            <a href="genindex.html" title="General Index"
+              >index</a>
+          </div>
+          <div role="note" aria-label="source link">
+              <br/>
+              <a href="_sources/Project.rst.txt"
+                rel="nofollow">Show Source</a>
+          </div>
+        </div>
+
+        <div class="right">
+          
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, David A. Sheen.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.0.
+    </div>
+        </div>
+        <div class="clearer"></div>
+      </div>
+    </div>
+
+  </body>
+</html>

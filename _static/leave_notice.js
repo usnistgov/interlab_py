@@ -14,6 +14,6 @@ $(document).ready(function(){
   });
   // Add leaveNotice to external A elements 
   $('a.external').leaveNotice({
-    siteName: 'the NIST fork of the leaveNotice jQuery plugin',
+    siteName: 'pages.nist.gov',
   });
 });

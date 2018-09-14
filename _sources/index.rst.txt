@@ -16,25 +16,25 @@ Interlab: A python module for consensus analysis in interlaboratory studies
 
 Welcome to the home page for analysis software of Interlab: A python module for consensus analysis in interlaboratory studies. This software is a Python package that will perform consensus analysis on spectral data such as NMR, GC-MS and LC-MS.
 
+
+Contents
+++++++++
+
+.. toctree::
+   :maxdepth: 2
+
+   
+   Project
+   Subobjects
+   Metrics
+   analysis_demo.ipynb
+..   analysis_demo
+   :caption: Contents:
+
 Legal
 +++++
 
 This software is subject to the `NIST Software License <https://www.nist.gov/director/licensing>`_ (revised as of August 2018). 
-
-.. Contents
-.. ++++++++
-
-.. toctree::
-   :maxdepth: 2
-   :hidden:
-   :caption: Contents:
-      
-   Project
-   Subobjects
-   Metrics
-   analysis_demo
-..   analysis_demo.ipynb
-
  
 
 Contact

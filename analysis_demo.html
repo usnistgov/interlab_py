@@ -47,44 +47,256 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="example-interlaboratory-study">
-<h1>Example interlaboratory study<a class="headerlink" href="#example-interlaboratory-study" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="imports">
-<h2>Imports<a class="headerlink" href="#imports" title="Permalink to this headline">¶</a></h2>
-<p>Import the mumpce interface and the interface to Cantera.</p>
-<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">interlab</span> <span class="k">as</span> <span class="nn">inl</span>
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput,
+div.nbinput div.prompt,
+div.nbinput div.input_area,
+div.nbinput div[class*=highlight],
+div.nbinput div[class*=highlight] pre,
+div.nboutput,
+div.nbinput div.prompt,
+div.nbinput div.output_area,
+div.nboutput div[class*=highlight],
+div.nboutput div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput,
+div.nboutput {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput,
+    div.nboutput {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput div.prompt pre {
+    color: #303F9F;
+}
+
+/* output prompt */
+div.nboutput div.prompt pre {
+    color: #D84315;
+}
+
+/* all prompts */
+div.nbinput div.prompt,
+div.nboutput div.prompt {
+    min-width: 7ex;
+    padding-top: 0.4em;
+    padding-right: 0.4em;
+    text-align: right;
+    flex: 0;
+}
+@media (max-width: 540px) {
+    div.nbinput div.prompt,
+    div.nboutput div.prompt {
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput div.prompt.empty {
+        padding: 0;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput div.prompt pre,
+div.nboutput div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput div.input_area,
+div.nboutput div.output_area {
+    padding: 0.4em;
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput div.input_area,
+    div.nboutput div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput div.input_area {
+    border: 1px solid #cfcfcf;
+    border-radius: 2px;
+    background: #f7f7f7;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.pngmath center alignment in output cells */
+div.nboutput div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+</style>
+<div class="section" id="Example-interlaboratory-study">
+<h1>Example interlaboratory study<a class="headerlink" href="#Example-interlaboratory-study" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="Imports">
+<h2>Imports<a class="headerlink" href="#Imports" title="Permalink to this headline">¶</a></h2>
+<p>Import the mumpce interface and the interface to interlab.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
+<span></span>In [1]:
 </pre></div>
 </div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">interlab</span> <span class="k">as</span> <span class="nn">inl</span>
+</pre></div>
+</div>
+</div>
 <p>Import Numerical Python and Pandas</p>
-<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
+<span></span>In [2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 </pre></div>
 </div>
 </div>
-<div class="section" id="creating-a-project">
-<h2>Creating a Project<a class="headerlink" href="#creating-a-project" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="reading-project-metadata">
-<h3>Reading project metadata<a class="headerlink" href="#reading-project-metadata" title="Permalink to this headline">¶</a></h3>
-<p><cite>interlab</cite> is agnostic to the way that your data is arranged. All that’s required is that you have the experimental measurements divided logically into groups, where each group represents all the measurements of one sample. The exact way you do this is up to you; this example shows how to do create a Project using Pandas and an Excel workbook.</p>
-<p>We’ve decided to remove some of the NMR data in the region of the water signal, so let’s do that.</p>
-<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">range_to_use</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">959</span><span class="p">))</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1058</span><span class="p">,</span><span class="mi">1860</span><span class="p">))</span>
+</div>
+<div class="section" id="Creating-a-Project">
+<h2>Creating a Project<a class="headerlink" href="#Creating-a-Project" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="Reading-project-metadata">
+<h3>Reading project metadata<a class="headerlink" href="#Reading-project-metadata" title="Permalink to this headline">¶</a></h3>
+<p><cite>interlab</cite> is agnostic to the way that your data is arranged. All that’s required is that you have the experimental measurements divided logically into groups, where each group represents all the measurements of one sample. The exact way you do this is up to you; this example shows how to do create a <a class="reference internal" href="Project.html#project.Project" title="project.Project"><code class="xref py py-class docutils literal notranslate"><span class="pre">Project</span></code></a> using Pandas and an Excel workbook.</p>
+<p>We’ve decided to remove some of the NMR data in the region of the water signal, so let’s define the range that we’ll actually use.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
+<span></span>In [3]:
 </pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">range_to_use</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">959</span><span class="p">))</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1058</span><span class="p">,</span><span class="mi">1860</span><span class="p">))</span>
+</pre></div>
+</div>
 </div>
 <p>Read the Excel workbook that contains the project data. We’re using Pandas to read all the sheets of this workbook. This will result in a dictionary of Pandas DataFrame objects that we will have to parse.</p>
-<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">df_dict</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="s1">&#39;syn_data.xlsx&#39;</span><span class="p">,</span><span class="n">sheet_name</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
+<span></span>In [4]:
 </pre></div>
 </div>
-<p>Each sheet in the workbook corresponds to the NMR spectra from one particular sample. The name of each sheet is the name of the sample, which are then the keys of our <cite>df_dict</cite>. We’ll use these keys as the keys for the various dictionaries we make before we create the project.</p>
-<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Spectrum_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">df</span> <span class="ow">in</span> <span class="n">df_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">df_dict</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="s1">&#39;syn_data.xlsx&#39;</span><span class="p">,</span><span class="n">sheet_name</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Each sheet in the workbook corresponds to the NMR spectra from one particular sample. The name of each sheet is the name of the sample, which are then the keys of our <cite>df_dict</cite>. We’ll use these keys as the keys for the various dictionaries we make before we create the <a class="reference internal" href="Project.html#project.Project" title="project.Project"><code class="xref py py-class docutils literal notranslate"><span class="pre">Project</span></code></a>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
+<span></span>In [5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">Spectrum_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">df</span> <span class="ow">in</span> <span class="n">df_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">Spectrum_names</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="s1">&#39;S1a&#39;</span><span class="p">,</span> <span class="s1">&#39;S1b&#39;</span><span class="p">,</span> <span class="s1">&#39;S1c&#39;</span><span class="p">,</span> <span class="s1">&#39;S1d&#39;</span><span class="p">,</span> <span class="s1">&#39;S1e&#39;</span><span class="p">,</span> <span class="s1">&#39;S1f&#39;</span><span class="p">,</span> <span class="s1">&#39;S2&#39;</span><span class="p">,</span> <span class="s1">&#39;S3&#39;</span><span class="p">,</span> <span class="s1">&#39;S4&#39;</span><span class="p">,</span> <span class="s1">&#39;S5&#39;</span><span class="p">,</span> <span class="s1">&#39;S6&#39;</span><span class="p">]</span>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[&#39;S1a&#39;, &#39;S1b&#39;, &#39;S1c&#39;, &#39;S1d&#39;, &#39;S1e&#39;, &#39;S1f&#39;, &#39;S2&#39;, &#39;S3&#39;, &#39;S4&#39;, &#39;S5&#39;, &#39;S6&#39;]
+</pre></div></div>
+</div>
+<p>The sheets are arranged such that each row corresponds to an NMR bin and each column represents the NMR measurements from one facility. We’ll extract the index values as the X data for our spectra and the column values as our list of facility labels. The X data have to be the same across all measurements, so we don’t save this as a dictionary. However, the facility labels might be different, because not every facility may have values for every experiment. This needs to be a dictionary with one element for every experiment.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
+<span></span>In [6]:
 </pre></div>
 </div>
-<p>The sheets are arranged such that each row corresponds to an NMR bin and each column represents the NMR measurements from one facility. We’ll extract the index values as the X data for our spectra and the column values as our list of facility labels. The X data have to be the same across all measurements, so we don’t save this as a dictionary. However, the facility labels might be different, because not every facility may have values for every experiment.</p>
-<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Labels_dict</span> <span class="o">=</span> <span class="p">{}</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">Labels_dict</span> <span class="o">=</span> <span class="p">{}</span>
 
 <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">df</span> <span class="ow">in</span> <span class="n">df_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
     <span class="n">peakPPM_full</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">range_to_use</span><span class="p">]</span>
@@ -95,12 +307,24 @@
 <span class="nb">print</span><span class="p">(</span><span class="n">peakPPM_full</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="s1">&#39;0115&#39;</span> <span class="s1">&#39;0122&#39;</span> <span class="s1">&#39;0258&#39;</span> <span class="s1">&#39;0333&#39;</span> <span class="s1">&#39;0711&#39;</span> <span class="s1">&#39;0714&#39;</span> <span class="s1">&#39;2861&#39;</span> <span class="s1">&#39;7042&#39;</span> <span class="s1">&#39;8865&#39;</span> <span class="s1">&#39;9541&#39;</span><span class="p">]</span>
-<span class="p">[</span><span class="mf">9.9975</span> <span class="mf">9.9925</span> <span class="mf">9.9875</span> <span class="o">...</span> <span class="mf">0.2125</span> <span class="mf">0.2075</span> <span class="mf">0.2025</span><span class="p">]</span>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[&#39;0115&#39; &#39;0122&#39; &#39;0258&#39; &#39;0333&#39; &#39;0711&#39; &#39;0714&#39; &#39;2861&#39; &#39;7042&#39; &#39;8865&#39; &#39;9541&#39;]
+[9.9975 9.9925 9.9875 ... 0.2125 0.2075 0.2025]
+</pre></div></div>
+</div>
+<p>Here, we define which metrics we’ll be using for the interlab analysis.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
+<span></span>In [7]:
 </pre></div>
 </div>
-<p>Here, we define which metrics we’ll be using for the interlab analysis</p>
-<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">jeffries</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;Symmetric Kullback-Liebler&#39;</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">jeffries</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;Symmetric Kullback-Liebler&#39;</span>
 <span class="n">jensen</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;Jensen-Shannon&#39;</span>
 <span class="n">hellinger</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;Hellinger&#39;</span>
 <span class="n">mahalanobis</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;Mahalanobis&#39;</span>
@@ -112,10 +336,17 @@
 </pre></div>
 </div>
 </div>
-<div class="section" id="reading-project-data">
-<h3>Reading project data<a class="headerlink" href="#reading-project-data" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="Reading-project-data">
+<h3>Reading project data<a class="headerlink" href="#Reading-project-data" title="Permalink to this headline">¶</a></h3>
 <p>Now that the metadata have all been read, we will actually read the data and create the data dictionaries. We extract the raw data for each experiment group directly from the dataframe, after we remove the water-signal data that we didn’t want. This data goes into <cite>rawdata_dict</cite>. We use <cite>fix_spectrum</cite> to remove negative and zero values, then we sum-normalize the spectra. This goes into <cite>data_dict</cite>, which will actually be used for the interlab analysis.</p>
-<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rawdata_dict</span> <span class="o">=</span> <span class="p">{}</span>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
+<span></span>In [8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">rawdata_dict</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="n">data_dict</span> <span class="o">=</span> <span class="p">{}</span>
 
 <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">df</span> <span class="ow">in</span> <span class="n">df_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -127,10 +358,17 @@
 </pre></div>
 </div>
 </div>
-<div class="section" id="creating-the-project">
-<h3>Creating the Project<a class="headerlink" href="#creating-the-project" title="Permalink to this headline">¶</a></h3>
-<p>Now we have enough data to create the Project object. When created, the Project will read the <cite>rawdata_dict</cite>, <cite>data_dict</cite>, and <cite>Labels_dict</cite>, associating each element of these dictionaries with an <cite>ExperimentGroup</cite> object.</p>
-<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">synthetic_samples_project</span> <span class="o">=</span> <span class="n">inl</span><span class="o">.</span><span class="n">Project</span><span class="p">(</span><span class="n">x_data_list</span><span class="o">=</span><span class="n">peakPPM_full</span><span class="p">,</span>
+</div>
+<div class="section" id="Creating-the-Project">
+<h3>Creating the Project<a class="headerlink" href="#Creating-the-Project" title="Permalink to this headline">¶</a></h3>
+<p>Now we have enough data to create the <a class="reference internal" href="Project.html#project.Project" title="project.Project"><code class="xref py py-class docutils literal notranslate"><span class="pre">Project</span></code></a> object. When created, the Project will read the <cite>rawdata_dict</cite>, <cite>data_dict</cite>, and <cite>Labels_dict</cite>, associating each element of these dictionaries with an <a class="reference internal" href="Subobjects.html#utilities.ExperimentGroup" title="utilities.ExperimentGroup"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExperimentGroup</span></code></a> object.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
+<span></span>In [9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">synthetic_samples_project</span> <span class="o">=</span> <span class="n">inl</span><span class="o">.</span><span class="n">Project</span><span class="p">(</span><span class="n">x_data_list</span><span class="o">=</span><span class="n">peakPPM_full</span><span class="p">,</span>
                                          <span class="n">Sample_names</span><span class="o">=</span><span class="n">Spectrum_names</span><span class="p">,</span>
                                          <span class="n">Data_set_names</span><span class="o">=</span><span class="n">Labels_dict</span><span class="p">,</span>
                                          <span class="n">distance_metrics</span><span class="o">=</span><span class="n">nmr_distance_metrics</span><span class="p">,</span>
@@ -139,42 +377,197 @@
 </div>
 </div>
 </div>
-<div class="section" id="using-projects-to-run-interlaboratory-analysis">
-<h2>Using Projects to run interlaboratory analysis<a class="headerlink" href="#using-projects-to-run-interlaboratory-analysis" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="Using-Projects-to-run-interlaboratory-analysis">
+<h2>Using Projects to run interlaboratory analysis<a class="headerlink" href="#Using-Projects-to-run-interlaboratory-analysis" title="Permalink to this headline">¶</a></h2>
 <p>Now that we’ve created the project, we can begin to run the interlab analysis.</p>
-<div class="section" id="interspectral-distance-matrices">
-<h3>Interspectral distance matrices<a class="headerlink" href="#interspectral-distance-matrices" title="Permalink to this headline">¶</a></h3>
-<div class="section" id="interspectral-covariance-matrix">
-<h4>Interspectral covariance matrix<a class="headerlink" href="#interspectral-covariance-matrix" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="Interspectral-distance-matrices">
+<h3>Interspectral distance matrices<a class="headerlink" href="#Interspectral-distance-matrices" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="Interspectral-covariance-matrix">
+<h4>Interspectral covariance matrix<a class="headerlink" href="#Interspectral-covariance-matrix" title="Permalink to this headline">¶</a></h4>
 <p>Since we’re using Mahalanobis distance as a metric, we need to calculate the inverse covariance matrix. As there are fewer observations than variables, we know the covariance matrix will be singular, so we need to use the singular value decomposition to calculate it.</p>
-<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">process_mahalanobis</span><span class="p">()</span>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
+<span></span>In [10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">process_mahalanobis</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
-<div class="section" id="distance-matrices">
-<h4>Distance matrices<a class="headerlink" href="#distance-matrices" title="Permalink to this headline">¶</a></h4>
+</div>
+<div class="section" id="Distance-matrices">
+<h4>Distance matrices<a class="headerlink" href="#Distance-matrices" title="Permalink to this headline">¶</a></h4>
 <p>Now we calculate the distance matrices for each group,</p>
-<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">set_distances</span><span class="p">()</span>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
+<span></span>In [11]:
 </pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">set_distances</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "bfe4a97d2a05464f8f6a52a99ce9f0ae", "version_major": 2, "version_minor": 0}</script></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "c371b37e8f0046bb955f40042c33e7af", "version_major": 2, "version_minor": 0}</script></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "2a8824fde74247f785a2a90bbffe40a7", "version_major": 2, "version_minor": 0}</script></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "eccf0984f2354c1dbb5ecfb2d1e2247d", "version_major": 2, "version_minor": 0}</script></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "569dac43093046969fa5b91a596e192e", "version_major": 2, "version_minor": 0}</script></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+</pre></div></div>
 </div>
 <p>We can plot the spectral data and the distance matrices. Note that, if <cite>plot_range</cite> isn’t specified, this function will plot all of them</p>
-<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">f</span> <span class="o">=</span> <span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">plot_distance_fig</span><span class="p">(</span><span class="n">linecolor</span><span class="o">=</span><span class="s1">&#39;b&#39;</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;BuPu&#39;</span><span class="p">,</span>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
+<span></span>In [12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">f</span> <span class="o">=</span> <span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">plot_distance_fig</span><span class="p">(</span><span class="n">linecolor</span><span class="o">=</span><span class="s1">&#39;b&#39;</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;BuPu&#39;</span><span class="p">,</span>
                                                 <span class="n">plot_range</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;S2&#39;</span><span class="p">,</span><span class="s1">&#39;S3&#39;</span><span class="p">,</span><span class="s1">&#39;S6&#39;</span><span class="p">])</span>
 </pre></div>
 </div>
-<img alt="_images/analysis_demo_24_0.png" src="_images/analysis_demo_24_0.png" />
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/analysis_demo_24_01.png" src="_images/analysis_demo_24_01.png" />
 </div>
 </div>
-<div class="section" id="sample-level-scores-and-outliers">
-<h3>Sample-level scores and outliers<a class="headerlink" href="#sample-level-scores-and-outliers" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="Sample-level-scores-and-outliers">
+<h3>Sample-level scores and outliers<a class="headerlink" href="#Sample-level-scores-and-outliers" title="Permalink to this headline">¶</a></h3>
 <p>Fit the scores to the distances, and then find the outliers.</p>
-<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">fit_zscores</span><span class="p">()</span>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
+<span></span>In [13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">fit_zscores</span><span class="p">()</span>
 <span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">find_outliers</span><span class="p">()</span>
 </pre></div>
 </div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "88dd2cf5560d4b67bb7ff78c206c7ef3", "version_major": 2, "version_minor": 0}</script></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "056866b0010d49e6a1c9c2c3fbd3679c", "version_major": 2, "version_minor": 0}</script></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "ec613cfc50e44d1cb003cf8848add27d", "version_major": 2, "version_minor": 0}</script></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "189ee3c8b2724e4c9363641883176877", "version_major": 2, "version_minor": 0}</script></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "1bb8c1825b514bf9b712d0f97cad2944", "version_major": 2, "version_minor": 0}</script></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "f88d578d3bd74a49ba889b11ddc5484c", "version_major": 2, "version_minor": 0}</script></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "f00df518784940859e8852330d1a79eb", "version_major": 2, "version_minor": 0}</script></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "ae7a1af4200c4fb58f29c6fbc57b60be", "version_major": 2, "version_minor": 0}</script></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "e7ef18aaee2540ad93de314ed08a6992", "version_major": 2, "version_minor": 0}</script></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "286dc86cab02400baf4c488d6a4f78c0", "version_major": 2, "version_minor": 0}</script></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+</pre></div></div>
+</div>
 <p>We can also plot histograms and bar charts of the average interspectral distances. These distributions are where the Z-scores come from.</p>
 <p>Again, <cite>plot_range</cite> is optional.</p>
-<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">f</span> <span class="o">=</span> <span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">plot_histograms</span><span class="p">(</span><span class="n">jeffries</span><span class="p">,</span>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
+<span></span>In [14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">f</span> <span class="o">=</span> <span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">plot_histograms</span><span class="p">(</span><span class="n">jeffries</span><span class="p">,</span>
                                               <span class="n">numcols</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                                               <span class="n">plot_range</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;S2&#39;</span><span class="p">,</span><span class="s1">&#39;S3&#39;</span><span class="p">,</span><span class="s1">&#39;S6&#39;</span><span class="p">])</span>
 <span class="n">f</span> <span class="o">=</span> <span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">plot_zscore_distances</span><span class="p">(</span><span class="n">jeffries</span><span class="p">,</span>
@@ -182,54 +575,177 @@
                                                     <span class="n">plot_range</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;S2&#39;</span><span class="p">,</span><span class="s1">&#39;S3&#39;</span><span class="p">,</span><span class="s1">&#39;S6&#39;</span><span class="p">])</span>
 </pre></div>
 </div>
-<img alt="_images/analysis_demo_28_0.png" src="_images/analysis_demo_28_0.png" />
-<img alt="_images/analysis_demo_28_1.png" src="_images/analysis_demo_28_1.png" />
 </div>
-<div class="section" id="interlaboratory-statistical-projection">
-<h3>Interlaboratory statistical projection<a class="headerlink" href="#interlaboratory-statistical-projection" title="Permalink to this headline">¶</a></h3>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/analysis_demo_28_01.png" src="_images/analysis_demo_28_01.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/analysis_demo_28_11.png" src="_images/analysis_demo_28_11.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Interlaboratory-statistical-projection">
+<h3>Interlaboratory statistical projection<a class="headerlink" href="#Interlaboratory-statistical-projection" title="Permalink to this headline">¶</a></h3>
 <p>The Z-scores can then be cast as an array, which we will then use to calculate the lab-level scores and determine outliers. Note how, in this case, we are not screening outlier spectra before we perform our analysis.</p>
-<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">extract_matrices</span><span class="p">(</span><span class="n">screen_outliers</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
+<span></span>In [15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">extract_matrices</span><span class="p">(</span><span class="n">screen_outliers</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">plot_zscores_heatmap</span><span class="p">(</span><span class="n">metric</span><span class="o">=</span><span class="n">jeffries</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;BuPu&#39;</span><span class="p">)</span>
 <span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">plot_zscores_heatmap</span><span class="p">(</span><span class="n">screen_outliers</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">metric</span><span class="o">=</span><span class="n">jeffries</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;BuPu&#39;</span><span class="p">)</span>
 <span class="n">f</span> <span class="o">=</span> <span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">plot_zscore_loadings</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="_images/analysis_demo_30_2.png" src="_images/analysis_demo_30_2.png" />
-<img alt="_images/analysis_demo_30_3.png" src="_images/analysis_demo_30_3.png" />
-<img alt="_images/analysis_demo_30_4.png" src="_images/analysis_demo_30_4.png" />
 </div>
-<div class="section" id="laboratory-level-scoring-and-outliers">
-<h3>Laboratory-level scoring and outliers<a class="headerlink" href="#laboratory-level-scoring-and-outliers" title="Permalink to this headline">¶</a></h3>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "1cff4b6b3b5b45918951ee4383efdc04", "version_major": 2, "version_minor": 0}</script></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/analysis_demo_30_21.png" src="_images/analysis_demo_30_21.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/analysis_demo_30_31.png" src="_images/analysis_demo_30_31.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/analysis_demo_30_41.png" src="_images/analysis_demo_30_41.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Laboratory-level-scoring-and-outliers">
+<h3>Laboratory-level scoring and outliers<a class="headerlink" href="#Laboratory-level-scoring-and-outliers" title="Permalink to this headline">¶</a></h3>
 <p>Find the outliers and plot the lab-level Z-scores as well as the statistical projection</p>
-<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">find_lab_outliers</span><span class="p">(</span><span class="n">recursive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">support_fraction</span><span class="o">=</span><span class="mf">0.6</span><span class="p">)</span>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
+<span></span>In [16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">find_lab_outliers</span><span class="p">(</span><span class="n">recursive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">support_fraction</span><span class="o">=</span><span class="mf">0.6</span><span class="p">)</span>
 <span class="n">f</span> <span class="o">=</span> <span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">plot_projected_zscores</span><span class="p">()</span>
 <span class="n">f</span> <span class="o">=</span> <span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">plot_zscore_outliers</span><span class="p">(</span><span class="n">jeffries</span><span class="p">)</span>
 <span class="n">f</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s1">&#39;equal&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="_images/analysis_demo_32_2.png" src="_images/analysis_demo_32_2.png" />
-<img alt="_images/analysis_demo_32_3.png" src="_images/analysis_demo_32_3.png" />
-<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">f</span> <span class="o">=</span> <span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">plot_zscore_outliers</span><span class="p">(</span><span class="n">hellinger</span><span class="p">)</span>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "4307fa7556bb4f53a5ccf0f4ee28a1c9", "version_major": 2, "version_minor": 0}</script></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/analysis_demo_32_21.png" src="_images/analysis_demo_32_21.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/analysis_demo_32_31.png" src="_images/analysis_demo_32_31.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
+<span></span>In [17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">f</span> <span class="o">=</span> <span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">plot_zscore_outliers</span><span class="p">(</span><span class="n">hellinger</span><span class="p">)</span>
 <span class="n">f</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s1">&#39;equal&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="_images/analysis_demo_33_0.png" src="_images/analysis_demo_33_0.png" />
-<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">f</span> <span class="o">=</span> <span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">plot_zscore_outliers</span><span class="p">(</span><span class="n">mahalanobis</span><span class="p">)</span>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/analysis_demo_33_01.png" src="_images/analysis_demo_33_01.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
+<span></span>In [18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">f</span> <span class="o">=</span> <span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">plot_zscore_outliers</span><span class="p">(</span><span class="n">mahalanobis</span><span class="p">)</span>
 <span class="n">f</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s1">&#39;equal&#39;</span><span class="p">)</span>
 <span class="n">f</span> <span class="o">=</span> <span class="n">synthetic_samples_project</span><span class="o">.</span><span class="n">plot_zscore_outliers</span><span class="p">(</span><span class="n">mahalanobis</span><span class="p">,</span><span class="n">y_component</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="n">f</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s1">&#39;equal&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="_images/analysis_demo_34_0.png" src="_images/analysis_demo_34_0.png" />
-<img alt="_images/analysis_demo_34_1.png" src="_images/analysis_demo_34_1.png" />
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/analysis_demo_34_01.png" src="_images/analysis_demo_34_01.png" />
 </div>
 </div>
-<div class="section" id="accessing-data-within-a-project">
-<h2>Accessing data within a Project<a class="headerlink" href="#accessing-data-within-a-project" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="accessing-experiment-groups">
-<h3>Accessing Experiment Groups<a class="headerlink" href="#accessing-experiment-groups" title="Permalink to this headline">¶</a></h3>
-<p>The individual <code class="xref py py-class docutils literal notranslate"><span class="pre">ExperimentGroup</span></code> objects can be accessed by name:</p>
-<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nmrdata</span> <span class="o">=</span> <span class="n">synthetic_samples_project</span><span class="p">[</span><span class="s1">&#39;S6&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">T</span>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/analysis_demo_34_11.png" src="_images/analysis_demo_34_11.png" />
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="Accessing-data-within-a-Project">
+<h2>Accessing data within a Project<a class="headerlink" href="#Accessing-data-within-a-Project" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="Accessing-Experiment-Groups">
+<h3>Accessing Experiment Groups<a class="headerlink" href="#Accessing-Experiment-Groups" title="Permalink to this headline">¶</a></h3>
+<p>The individual <code class="xref py py-class docutils literal notranslate"><span class="pre">ExperimentGroup</span></code> objects can be accessed as if the <a class="reference internal" href="Project.html#project.Project" title="project.Project"><code class="xref py py-class docutils literal notranslate"><span class="pre">Project</span></code></a> were a dictionary:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
+<span></span>In [19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">nmrdata</span> <span class="o">=</span> <span class="n">synthetic_samples_project</span><span class="p">[</span><span class="s1">&#39;S6&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">T</span>
 <span class="n">nmrdata</span> <span class="o">=</span> <span class="n">nmrdata</span><span class="o">/</span><span class="n">nmrdata</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">peakPPM_full</span><span class="p">,</span><span class="n">nmrdata</span><span class="o">+</span><span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span><span class="o">+</span><span class="mf">0.5</span><span class="p">)</span>
@@ -237,9 +753,22 @@
 <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">invert_xaxis</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="_images/analysis_demo_36_0.png" src="_images/analysis_demo_36_0.png" />
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/analysis_demo_36_01.png" src="_images/analysis_demo_36_01.png" />
+</div>
+</div>
 <p>You can access multiple <code class="xref py py-class docutils literal notranslate"><span class="pre">ExperimentGroup</span></code> objects by passing a list of names.</p>
-<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">group_list</span> <span class="o">=</span> <span class="n">synthetic_samples_project</span><span class="p">[[</span><span class="s1">&#39;S2&#39;</span><span class="p">,</span><span class="s1">&#39;S6&#39;</span><span class="p">]]</span>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
+<span></span>In [20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">group_list</span> <span class="o">=</span> <span class="n">synthetic_samples_project</span><span class="p">[[</span><span class="s1">&#39;S2&#39;</span><span class="p">,</span><span class="s1">&#39;S6&#39;</span><span class="p">]]</span>
 
 <span class="n">fig</span><span class="p">,</span><span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
 
@@ -252,12 +781,25 @@
     <span class="n">ax</span><span class="o">.</span><span class="n">invert_xaxis</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="_images/analysis_demo_38_0.png" src="_images/analysis_demo_38_0.png" />
 </div>
-<div class="section" id="accessing-distance-metrics">
-<h3>Accessing Distance Metrics<a class="headerlink" href="#accessing-distance-metrics" title="Permalink to this headline">¶</a></h3>
-<p>The distance metrics for an <code class="xref py py-class docutils literal notranslate"><span class="pre">ExperimentGroup</span></code> can be accessed by array-like indexing:</p>
-<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">synthetic_samples_project</span><span class="p">[</span><span class="s1">&#39;S6&#39;</span><span class="p">,</span><span class="n">jeffries</span><span class="p">]</span><span class="o">.</span><span class="n">distance_matrix</span>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/analysis_demo_38_01.png" src="_images/analysis_demo_38_01.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Accessing-Distance-Metrics">
+<h3>Accessing Distance Metrics<a class="headerlink" href="#Accessing-Distance-Metrics" title="Permalink to this headline">¶</a></h3>
+<p>Individual <a class="reference internal" href="Subobjects.html#utilities.DistanceMetric" title="utilities.DistanceMetric"><code class="xref py py-class docutils literal notranslate"><span class="pre">DistanceMetric</span></code></a> objects for an <code class="xref py py-class docutils literal notranslate"><span class="pre">ExperimentGroup</span></code> can be accessed by array-like indexing:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
+<span></span>In [21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">d</span> <span class="o">=</span> <span class="n">synthetic_samples_project</span><span class="p">[</span><span class="s1">&#39;S6&#39;</span><span class="p">,</span><span class="n">jeffries</span><span class="p">]</span><span class="o">.</span><span class="n">distance_matrix</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="n">origin</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;BuPu&#39;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)))</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">(</span><span class="n">Labels</span><span class="p">)</span>
@@ -266,12 +808,32 @@
 <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">colorbar</span><span class="o">.</span><span class="n">Colorbar</span> <span class="n">at</span> <span class="mh">0x7f5902d59d30</span><span class="o">&gt;</span>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
+<span></span>Out[21]:
 </pre></div>
 </div>
-<img alt="_images/analysis_demo_40_1.png" src="_images/analysis_demo_40_1.png" />
-<p>Multiple <code class="xref py py-class docutils literal notranslate"><span class="pre">DistanceMetric</span></code> s can be accessed by passing a list.</p>
-<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">metric_list</span> <span class="o">=</span> <span class="n">synthetic_samples_project</span><span class="p">[</span><span class="s1">&#39;S6&#39;</span><span class="p">,[</span><span class="n">jeffries</span><span class="p">,</span><span class="n">hellinger</span><span class="p">]]</span>
+<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
+<span></span>&lt;matplotlib.colorbar.Colorbar at 0x7fd46f65f588&gt;
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/analysis_demo_40_11.png" src="_images/analysis_demo_40_11.png" />
+</div>
+</div>
+<p>Multiple <code class="xref py py-class docutils literal notranslate"><span class="pre">DistanceMetric</span></code> objects can be accessed by passing a list.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
+<span></span>In [22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">metric_list</span> <span class="o">=</span> <span class="n">synthetic_samples_project</span><span class="p">[</span><span class="s1">&#39;S6&#39;</span><span class="p">,[</span><span class="n">jeffries</span><span class="p">,</span><span class="n">hellinger</span><span class="p">]]</span>
 
 <span class="n">fig</span><span class="p">,</span><span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
 
@@ -285,7 +847,24 @@
     <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im</span><span class="p">,</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="_images/analysis_demo_42_0.png" src="_images/analysis_demo_42_0.png" />
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/analysis_demo_42_01.png" src="_images/analysis_demo_42_01.png" />
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
+<span></span>In [ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
 </div>
 </div>
 </div>
@@ -297,7 +876,19 @@
         </div>
         <div class="sidebar">
           <h3>Table of Contents</h3>
-          
+          <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Project.html">The interlab Project class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Subobjects.html">Subobjects within the Project class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Metrics.html">Distance metrics</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Example interlaboratory study</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#Imports">Imports</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Creating-a-Project">Creating a Project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Using-Projects-to-run-interlaboratory-analysis">Using Projects to run interlaboratory analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Accessing-data-within-a-Project">Accessing data within a Project</a></li>
+</ul>
+</li>
+</ul>
+
           <div role="search">
             <h3 style="margin-top: 1.5em;">Search</h3>
             <form class="search" action="search.html" method="get">
@@ -323,7 +914,7 @@
           </div>
           <div role="note" aria-label="source link">
               <br/>
-              <a href="_sources/analysis_demo.rst.txt"
+              <a href="_sources/analysis_demo.ipynb.txt"
                 rel="nofollow">Show Source</a>
           </div>
         </div>

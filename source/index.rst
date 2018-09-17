@@ -6,7 +6,7 @@
 Interlab: A python module for consensus analysis in interlaboratory studies
 ===========================================================================
 
-*David A. Sheen*
+`David A. Sheen <mailto:david.sheen@nist.gov>`_
 
 *National Institute of Standards and Technology*
 
@@ -16,30 +16,44 @@ Interlab: A python module for consensus analysis in interlaboratory studies
 
 Welcome to the home page for analysis software of Interlab: A python module for consensus analysis in interlaboratory studies. This software is a Python package that will perform consensus analysis on spectral data such as NMR, GC-MS and LC-MS.
 
-Legal
-+++++
-
-This software is subject to the `NIST Software License <https://www.nist.gov/director/licensing>`_ (revised as of August 2018). This license can be found in the GitHub repo in the file named LICENSE. 
 
 Contents
 ++++++++
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+
    
    Project
    Subobjects
    Metrics
-   analysis_demo
-..   analysis_demo.ipynb
+   analysis_demo.ipynb
+..   analysis_demo
+   :caption: Contents:
+
+Legal
++++++
+
+This software is subject to the `NIST Software License <https://www.nist.gov/director/licensing>`_ (revised as of August 2018). 
+ 
+
+Contact
++++++++
+
+David Sheen 
+
+* `Email <mailto:david.sheen@nist.gov>`_
+* `NIST Staff Page <https://www.nist.gov/people/david-sheen>`_
+* `GitHub profile <https://github.com/davidasheen>`_
 
 Links
 +++++
 
-`GitHub profile <https://github.com/davidasheen>`_
-
 `NIST GitHub Organization <https://github.com/usnistgov>`_
+
+`NIST MetQual program <https://www.nist.gov/programs-projects/metabolomics-quality-assurance-and-quality-control-materials-metqual-program>`_
+
+`NIST Chemical Informatics Research Group <https://www.nist.gov/mml/csd/chemical-informatics-research-group>`_
 
 `NIST home page <http://nist.gov>`_
 

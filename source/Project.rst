@@ -42,8 +42,10 @@ The distance metrics are defined by a list of dictionaries. Each dictionary must
    
    jeffries = r'Symmetric Kullback-Liebler'
    mahalanobis = r'Mahalanobis'
-   nmr_distance_metrics = [dict(metric=mahalanobis,function='mahalanobis'), #'mahalanobis' is recognized by pdist()
-                           dict(metric=jeffries,function=interlab.jeffries), #qmet.jeffries is a distance included in this package
+   nmr_distance_metrics = [dict(metric=mahalanobis,function='mahalanobis'), 
+                           #'mahalanobis' is recognized by pdist()
+                           dict(metric=jeffries,function=interlab.jeffries), 
+                           #interlab.jeffries is a distance included in this package
                           ]
 
 Project workflow

@@ -21,11 +21,21 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('../interlab'))
 
-# Custom style for NIST header and footer
+# NIST required stuff
 def setup(app):
+    #NIST header and footer
     app.add_stylesheet('https://pages.nist.gov/nist-header-footer/css/nist-combined.css')
     app.add_javascript('https://pages.nist.gov/nist-header-footer/js/jquery-1.9.0.min.js')
     app.add_javascript('https://pages.nist.gov/nist-header-footer/js/nist-header-footer.js')
+    
+    #Google analytics
+    app.add_javascript('https://dap.digitalgov.gov/Universal-Federated-Analytics-Min.js?agency=NIST&subagency=github&pua=UA-42404149-54&yt=true&exts=ppsx,pps,f90,sch,rtf,wrl,txz,m1v,xlsm,msi,xsd,f,tif,eps,mpg,xml,pl,xlt,c',id='_fed_an_ua_tag')
+    
+    #LeaveNotice
+    app.add_javascript('https://code.jquery.com/jquery.1.12.4.min.js')
+    app.add_javascript('https://pages.nist.gov/leaveNotice/js/jquery.leaveNotice-nist.min.js')
+    app.add_stylesheet('https://pages.nist.gov/leaveNotice/css/jquery.leaveNotice.css')
+    app.add_javascript('leave_notice.js')
     return
 
 # -- General configuration ------------------------------------------------
@@ -37,7 +47,7 @@ def setup(app):
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = [#'nbsphinx',
+extensions = ['nbsphinx',
               'sphinx.ext.autodoc',
               'sphinx.ext.autosummary',
               'sphinx.ext.doctest',
@@ -64,8 +74,9 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'interlab'
-copyright = '2018, David A. Sheen'
+copyright = ''#'2018, David A. Sheen'
 author = 'David A. Sheen'
+html_show_copyright = False
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -86,7 +97,7 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ['**.ipynb_checkpoints']
+exclude_patterns = ['**.ipynb_checkpoints','_*','Untitled*']
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'

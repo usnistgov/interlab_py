@@ -154,7 +154,10 @@ class Project(object):
                               distribution=self._distribution_function,
                               #mahalanobis_dict=self.mahalanobis_dict
                              )
-            self.experiment_groups += [ExperimentGroup(**group_keyw)]
+            if data[key].shape[0] > 2:
+                self.experiment_groups += [ExperimentGroup(**group_keyw)]
+            else:
+                print('Group {} has fewer than 3 measurements, not creating'.format(key))
         
         return
     

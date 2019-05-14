@@ -348,7 +348,7 @@ class Population(object):
         self.zscores = std.ppf(CDF)
         
         #Explicitly calculate Z if the distribution is lognorm, because this will give more reliable results for large Z
-        if self.distribution is sp.stats.lognorm:
+        if type(self.distribution) is type(sp.stats.lognorm):
             mean = self.params[2]
             stdev = self.params[0]
             self.zscores = np.exp( (np.log(data) - np.log(mean)) / stdev)

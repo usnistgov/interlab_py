@@ -13,7 +13,7 @@ def idfunc(*args,**kwargs):
     '''Returns exactly the function's positional arguments, ignoring any keyword arguments'''
     if len(args) == 1:
         return args[0] #We only passed one argument to the function. We want to return arg, not (arg)
-    return arg
+    return args
 
 def g_formatter(x):
     a,b = '{:.2e}'.format(x).split('e')
@@ -336,8 +336,8 @@ class Population(object):
         :key mask: If present, masks some elements of data
         """
         
-        if mask is None: mask = np.ones_like(data,dtype=np.bool)
         if data is None: data = self.values
+        if mask is None: mask = np.ones_like(data,dtype=np.bool)
         
         std = self.distribution(1)        
         self.params = self.distribution.fit(data[mask],floc=0)
@@ -357,30 +357,40 @@ class Population(object):
         
         return
     
-    def find_outliers(self,recursive=False,support_fraction=0.6):
+    def find_outliers(self,recursive=False,support_fraction=0.6,final_screen=False):
         """Finds the outliers of the distribution
         
         :key recursive: If true, finds outliers and refit until all outliers have been removed
         :key support_fraction: Fraction of values that are guaranteed to be retained
         """
+        
+        max_percentile = 0.9495 #95% confidence limint, respecting support fraction (respecting 3 sig figs rounding)
+        max_ignore_support_fraction = 0.9895 #99% confidence limit, ignoring support fraction (3 sig fig rounding)
+        
         std = self.distribution(1)
-        zlimit = std.ppf(0.9495)
+        zlimit = std.ppf(max_percentile)
+        zlimit_ignore = std.ppf(max_ignore_support_fraction)
         
         self.fit_zscores(self.values)
         max_num_outliers = int((1-support_fraction)*len(self.values))
         
         self.outlier_mask = np.ones_like(self.values,dtype=np.bool)
         
-        if not recursive:
-            self.outlier_mask = self.zscores < zlimit #If not recursive, just get all outliers and leave
-            return
+#         if not recursive:
+#             for i in range(max_num_outliers):
+#                 self.outlier_mask = self.zscores < zlimit #If not recursive, just get all outliers and leave
+#             return
         
+        # Note that, because we always use a support fraction, we always want to remove outliers one-by-one
         for i in range(max_num_outliers):
             zmax = self.zscores[self.outlier_mask].max() #Get the biggest z-score still considered in the distribution
             if zmax < zlimit: break #If the biggest z-score is within the zlimit, break from the loop
             self.outlier_mask = self.zscores < zmax
-            self.fit_zscores(self.values,self.outlier_mask)
-        self.outlier_mask = self.zscores < zlimit
+            #Recalculate z-scores only if recursive
+            if recursive: self.fit_zscores(self.values,self.outlier_mask) 
+        if final_screen:
+            self.outlier_mask = self.zscores < zlimit_ignore
+            if recursive: self.fit_zscores(self.values,self.outlier_mask) 
         return
     
     def minmax(self):

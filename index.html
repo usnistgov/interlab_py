@@ -55,9 +55,16 @@
 <p><em>National Institute of Standards and Technology</em></p>
 <p><em>Last Revision</em> Oct 21, 2020</p>
 <p><a class="reference external" href="https://github.com/usnistgov/interlab_py">Download this software from GitHub</a></p>
-<p>Welcome to the home page for analysis software of Interlab: A python module for consensus analysis in interlaboratory studies. This software is a Python package that will perform consensus analysis on spectral data such as NMR, GC-MS and LC-MS. Use of this code allows researchers to identify laboratories producing data closest to the consensus values, thereby ensuring that untargeted studies are using the most precise data available to them. The software was originally developed for analyzing NMR data [1, 2] but can be applied to any array data, including Raman or FTIR spectroscopy and GC-MS or LC-MS. Details on the implementation of the code can be found in Ref. [1].
-The input for the code consists of a set of sample labels identifying the physical objects measured in the interlaboratory study, facility labels that identify the facility of origin of the measurements, and the data themselves. It is the responsibility of the user to format the data and metadata so that the code can read it. In addition, the user must specify the distance function that will be used to compare the spectra and the statistical distribution that these distances will be fit to. One example is given in the <a class="reference external" href="https://pages.nist.gov/interlab_py/analysis_demo.html">example notebook</a>.
-Given the input data, the code will perform the following tasks:</p>
+<p>Welcome to the home page for analysis software of Interlab: A python module for consensus analysis in interlaboratory studies. This software is a Python package that will perform consensus analysis on spectral data such as NMR, GC-MS and LC-MS. Use of this code allows researchers to identify laboratories producing data closest to the consensus values, thereby ensuring that untargeted studies are using the most precise data available to them. The software was originally developed for analyzing NMR data but can be applied to any array data, including Raman or FTIR spectroscopy and GC-MS or LC-MS.</p>
+<p>The input for the code consists of a set of sample labels identifying the physical objects measured in the interlaboratory study, facility labels that identify the facility of origin of the measurements, and the data themselves. It is the responsibility of the user to format the data and metadata so that the code can read it. In addition, the user must specify the distance function that will be used to compare the spectra and the statistical distribution that these distances will be fit to. Two examples are provided:</p>
+<blockquote>
+<div><ul class="simple">
+<li>An <a class="reference external" href="https://pages.nist.gov/interlab_py/analysis_demo.html">example notebook</a> based on <a class="reference external" href="https://doi.org/10.1016/j.chemolab.2016.12.010">our first publication</a>.</li>
+<li>Our <cite>consistency analysis study &lt;https://pages.nist.gov/interlab_py/nist_mab.html&gt;</cite> of the NISTmAb Interlaboratory Study, originally published <a class="reference external" href="https://doi.org/10.1016/j.chemolab.2020.103973">here</a></li>
+</ul>
+</div></blockquote>
+<p>One example is given in the <a class="reference external" href="https://pages.nist.gov/interlab_py/analysis_demo.html">example notebook</a>.</p>
+<p>Given the input data, the code will perform the following tasks:</p>
 <blockquote>
 <div><ul class="simple">
 <li>Calculates the interspectral distances</li>

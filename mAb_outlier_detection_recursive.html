@@ -1,0 +1,875 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Outlier Detection: Recursive &#8212; interlab 0.1.1 documentation</title>
+    <link rel="stylesheet" href="_static/agogo.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css" />
+    <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/leaveNotice/css/jquery.leaveNotice.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script type="text/javascript" src="https://pages.nist.gov/nist-header-footer/js/jquery-1.9.0.min.js"></script>
+    <script type="text/javascript" src="https://pages.nist.gov/nist-header-footer/js/nist-header-footer.js"></script>
+    <script id="_fed_an_ua_tag" type="text/javascript" src="https://dap.digitalgov.gov/Universal-Federated-Analytics-Min.js?agency=NIST&subagency=github&pua=UA-42404149-54&yt=true&exts=ppsx,pps,f90,sch,rtf,wrl,txz,m1v,xlsm,msi,xsd,f,tif,eps,mpg,xml,pl,xlt,c"></script>
+    <script type="text/javascript" src="https://code.jquery.com/jquery.1.12.4.min.js"></script>
+    <script type="text/javascript" src="https://pages.nist.gov/leaveNotice/js/jquery.leaveNotice-nist.min.js"></script>
+    <script type="text/javascript" src="_static/leave_notice.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Outlier Detection: Refit to single population" href="mAb_outlier_detection_non-recursive_single-pop.html" />
+    <link rel="prev" title="Outlier Detection: Non-Recursive" href="mAb_outlier_detection_non-recursive.html" /> 
+  </head><body>
+    <div class="header-wrapper" role="banner">
+      <div class="header">
+        <div class="headertitle"><a
+          href="index.html">interlab 0.1.1 documentation</a></div>
+        <div class="rel" role="navigation" aria-label="related navigation">
+          <a href="mAb_outlier_detection_non-recursive.html" title="Outlier Detection: Non-Recursive"
+             accesskey="P">previous</a> |
+          <a href="mAb_outlier_detection_non-recursive_single-pop.html" title="Outlier Detection: Refit to single population"
+             accesskey="N">next</a> |
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a>
+        </div>
+       </div>
+    </div>
+
+    <div class="content-wrapper">
+      <div class="content">
+        <div class="document">
+            
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput,
+div.nbinput div.prompt,
+div.nbinput div.input_area,
+div.nbinput div[class*=highlight],
+div.nbinput div[class*=highlight] pre,
+div.nboutput,
+div.nbinput div.prompt,
+div.nbinput div.output_area,
+div.nboutput div[class*=highlight],
+div.nboutput div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput,
+div.nboutput {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput,
+    div.nboutput {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput div.prompt,
+div.nboutput div.prompt {
+    min-width: 4ex;
+    padding-top: 0.4em;
+    padding-right: 0.4em;
+    text-align: right;
+    flex: 0;
+}
+@media (max-width: 540px) {
+    div.nbinput div.prompt,
+    div.nboutput div.prompt {
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput div.prompt.empty {
+        padding: 0;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput div.prompt pre,
+div.nboutput div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput div.input_area,
+div.nboutput div.output_area {
+    padding: 0.4em;
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput div.input_area,
+    div.nboutput div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    background: #f5f5f5;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+</style>
+<div class="section" id="Outlier-Detection:-Recursive">
+<h1>Outlier Detection: Recursive<a class="headerlink" href="#Outlier-Detection:-Recursive" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="Imports">
+<h2>Imports<a class="headerlink" href="#Imports" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1">#Python modules for numerics and scientific computing</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">scipy</span> <span class="k">as</span> <span class="nn">sp</span>
+<span class="kn">import</span> <span class="nn">math</span>
+
+<span class="c1">#scikit-learn</span>
+<span class="kn">import</span> <span class="nn">sklearn.preprocessing</span> <span class="k">as</span> <span class="nn">skpp</span>
+<span class="kn">import</span> <span class="nn">sklearn.decomposition</span> <span class="k">as</span> <span class="nn">skdecomp</span>
+
+<span class="c1">#Matplotlib</span>
+<span class="o">%</span><span class="k">matplotlib</span> inline
+<span class="kn">import</span> <span class="nn">matplotlib</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">matplotlib.colors</span> <span class="k">as</span> <span class="nn">mcolors</span>
+<span class="kn">import</span> <span class="nn">matplotlib.lines</span> <span class="k">as</span> <span class="nn">mlines</span>
+<span class="kn">import</span> <span class="nn">matplotlib.patches</span> <span class="k">as</span> <span class="nn">mpatches</span>
+
+<span class="kn">import</span> <span class="nn">mab_utils</span>
+<span class="kn">import</span> <span class="nn">plot_utils</span> <span class="k">as</span> <span class="nn">plu</span>
+<span class="c1">#import tqdm</span>
+
+<span class="kn">import</span> <span class="nn">interlab</span> <span class="k">as</span> <span class="nn">inl</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+</pre></div>
+</div>
+</div>
+<p>Load data from processing notebook</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">jeffries</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;Symmetric Kullback-Liebler&#39;</span>
+
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;mAb_interlab_project.sav&#39;</span><span class="p">,</span><span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">mab_project</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;mab_analysis_accessories.sav&#39;</span><span class="p">,</span><span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="p">(</span><span class="n">windowed_shape</span><span class="p">,</span><span class="n">jeffries</span><span class="p">,</span><span class="n">full_indices</span><span class="p">,</span><span class="n">split_point</span><span class="p">,</span>
+     <span class="n">ssi_contours</span><span class="p">,</span><span class="n">interp_map</span><span class="p">)</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+<span class="n">metadata_table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_hdf</span><span class="p">(</span><span class="s1">&#39;metadata_table_raw.h5&#39;</span><span class="p">,</span><span class="n">key</span><span class="o">=</span><span class="s1">&#39;NMR_2D_raw&#39;</span><span class="p">,</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Calculate-probability-scores-and-find-outliers">
+<h2>Calculate probability scores and find outliers<a class="headerlink" href="#Calculate-probability-scores-and-find-outliers" title="Permalink to this headline">¶</a></h2>
+<p>The matrix of pairwise distances is collapsed into the vector of average distances by taking the average distance of each spectrum from each other. The population of average distances in each group is fit to a distribution (here, lognormal).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">mab_project</span><span class="o">.</span><span class="n">fit_zscores</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<p>Probability scores are calculated for each measurement within each group and spectra outside the 95 % confidence boundary are identified as outliers.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">mab_project</span><span class="o">.</span><span class="n">find_outliers</span><span class="p">(</span><span class="n">recursive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                          <span class="n">support_fraction</span><span class="o">=</span><span class="mf">0.85</span><span class="p">,</span>
+                          <span class="n">final_screen</span><span class="o">=</span><span class="kc">True</span>
+                         <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">plot_range</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;D2A-S-600&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;D2A-S-700&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;D2A-S-800&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;D2C-S-600&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;D2C-S-700&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;D2C-S-800&#39;</span><span class="p">,</span>
+             <span class="p">]</span>
+
+<span class="n">f</span> <span class="o">=</span> <span class="n">mab_project</span><span class="o">.</span><span class="n">plot_histograms</span><span class="p">(</span><span class="n">jeffries</span><span class="p">,</span><span class="n">plot_range</span><span class="o">=</span><span class="n">plot_range</span><span class="p">,</span><span class="c1">#[&#39;D2A-S-600&#39;,&#39;D2C-S-600&#39;],</span>
+                                <span class="n">numcols</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+
+<span class="n">empirical_red_patch</span> <span class="o">=</span> <span class="n">mpatches</span><span class="o">.</span><span class="n">Patch</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Empirical distribution&#39;</span><span class="p">)</span>
+<span class="n">lognormal_line</span> <span class="o">=</span> <span class="n">mlines</span><span class="o">.</span><span class="n">Line2D</span><span class="p">([],[],</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;Lognormal Fit&#39;</span><span class="p">)</span>
+<span class="n">confidence_limit</span> <span class="o">=</span> <span class="n">mlines</span><span class="o">.</span><span class="n">Line2D</span><span class="p">([],[],</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span><span class="n">ls</span><span class="o">=</span><span class="s1">&#39;:&#39;</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;95 </span><span class="si">% li</span><span class="s1">mit&#39;</span><span class="p">)</span>
+<span class="n">l</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">handles</span><span class="o">=</span><span class="p">[</span><span class="n">empirical_red_patch</span><span class="p">,</span><span class="n">lognormal_line</span><span class="p">,</span><span class="n">confidence_limit</span><span class="p">],</span>
+                     <span class="n">ncol</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="n">loc</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">1.1</span><span class="p">))</span>
+
+<span class="n">caption_text</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Histograms of the average diameter distances in each experimental group &#39;</span> <span class="o">+</span>
+                <span class="s1">&#39;plotted with the corresponding lognormal distribution. </span><span class="se">\n</span><span class="s1">The 95% &#39;</span> <span class="o">+</span>
+                <span class="s1">&#39;confidence boundary is shown as a vertical dashed line. &#39;</span>
+               <span class="p">)</span>
+
+<span class="n">width</span><span class="p">,</span><span class="n">height</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">get_size_inches</span><span class="p">()</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mf">0.25</span><span class="o">/</span><span class="n">height</span><span class="p">,</span><span class="n">caption_text</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span><span class="n">va</span><span class="o">=</span><span class="s1">&#39;top&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/mAb_outlier_detection_recursive_8_0.png" src="_images/mAb_outlier_detection_recursive_8_0.png" />
+</div>
+</div>
+<div class="section" id="Save-outlier-information-to-metadata-table">
+<h3>Save outlier information to metadata table<a class="headerlink" href="#Save-outlier-information-to-metadata-table" title="Permalink to this headline">¶</a></h3>
+<p>Outlier data from the interlab study is saved to our metadata table.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">mab_utils</span><span class="o">.</span><span class="n">save_outlier_data</span><span class="p">(</span><span class="n">metadata_table</span><span class="p">,</span><span class="n">mab_project</span><span class="p">,</span><span class="n">full_indices</span><span class="p">,</span>
+                                        <span class="n">split_point</span><span class="p">,</span><span class="n">metric</span><span class="o">=</span><span class="n">jeffries</span><span class="p">)</span>
+<span class="n">metadata_table</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>INDEX</th>
+      <th>DIR_NAME</th>
+      <th>CODE</th>
+      <th>TITLE</th>
+      <th>ExpType</th>
+      <th>ExpCode</th>
+      <th>File</th>
+      <th>ExptScore</th>
+      <th>Zscore</th>
+      <th>Outlier</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>8822</td>
+      <td>8822-010</td>
+      <td>D2C-S-U-900-8822-010-37C</td>
+      <td>800</td>
+      <td>D2C-S</td>
+      <td>./release3/new_ext/001-D2C-S-U-900-8822-010-37...</td>
+      <td>0</td>
+      <td>0.851621</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>7425</td>
+      <td>7425-010</td>
+      <td>D2A-S-U-900-7425-010-37C</td>
+      <td>800</td>
+      <td>D2A-S</td>
+      <td>./release3/new_ext/002-D2A-S-U-900-7425-010-37...</td>
+      <td>0</td>
+      <td>0.810390</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>7425</td>
+      <td>7425-012</td>
+      <td>D2C-S-U-900-7425-012-37C</td>
+      <td>800</td>
+      <td>D2C-S</td>
+      <td>./release3/new_ext/003-D2C-S-U-900-7425-012-37...</td>
+      <td>0</td>
+      <td>0.529562</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>7425</td>
+      <td>7425-015</td>
+      <td>D3A-F-U-900-7425-015-37C</td>
+      <td>800</td>
+      <td>D3A-F</td>
+      <td>./release3/new_ext/004-D3A-F-U-900-7425-015-37...</td>
+      <td>0</td>
+      <td>0.426977</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>8495</td>
+      <td>8495-010</td>
+      <td>D2A-S-U-900-8495-010-37C</td>
+      <td>800</td>
+      <td>D2A-S</td>
+      <td>./release3/new_ext/005-D2A-S-U-900-8495-010-37...</td>
+      <td>0</td>
+      <td>11.433257</td>
+      <td>False</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</div>
+</div>
+<div class="section" id="Outlier-spectra">
+<h2>Outlier spectra<a class="headerlink" href="#Outlier-spectra" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">plot_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;$^1$H shift (ppm)&#39;</span><span class="p">,</span>
+                 <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;$^</span><span class="si">{13}</span><span class="s1">$C shift (ppm)&#39;</span><span class="p">,</span>
+                 <span class="n">plot_corners</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.9</span><span class="p">,</span><span class="o">-</span><span class="mf">0.9</span><span class="p">,</span><span class="mf">30.5</span><span class="p">,</span><span class="mi">9</span><span class="p">],</span>
+                 <span class="n">shape</span><span class="o">=</span><span class="n">windowed_shape</span><span class="p">,</span>
+                 <span class="n">window</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">sharey</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">plotsize</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span><span class="n">gridspec_kw</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">hspace</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span><span class="n">wspace</span><span class="o">=</span><span class="mf">0.05</span><span class="p">))</span>
+
+<span class="n">contour_colors_mappable</span> <span class="o">=</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">ScalarMappable</span><span class="p">(</span>
+    <span class="n">cmap</span><span class="o">=</span><span class="n">mab_utils</span><span class="o">.</span><span class="n">seismic_with_alpha</span><span class="o">.</span><span class="n">reversed</span><span class="p">())</span>
+
+<span class="n">contour_colormap</span> <span class="o">=</span> <span class="n">contour_colors_mappable</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">()</span>
+<span class="n">contours_rescale</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">ssi_contours</span><span class="p">,</span><span class="o">*</span><span class="n">interp_map</span><span class="p">)</span>
+
+<span class="n">contour_colors</span> <span class="o">=</span> <span class="n">contour_colormap</span><span class="p">(</span><span class="n">contours_rescale</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="False-positive-outliers">
+<h3>False-positive outliers<a class="headerlink" href="#False-positive-outliers" title="Permalink to this headline">¶</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">match_code</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">code</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;D&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">code</span> <span class="ow">in</span> <span class="n">metadata_table</span><span class="o">.</span><span class="n">ExpCode</span><span class="o">.</span><span class="n">values</span><span class="p">])</span>
+<span class="n">match_expert</span> <span class="o">=</span>  <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">score</span><span class="o">==</span><span class="mi">0</span> <span class="k">for</span> <span class="n">score</span> <span class="ow">in</span> <span class="n">metadata_table</span><span class="o">.</span><span class="n">ExptScore</span><span class="o">.</span><span class="n">values</span><span class="p">])</span>
+<span class="n">match_algori</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">metadata_table</span><span class="o">.</span><span class="n">Outlier</span><span class="p">)</span>
+<span class="n">match_outlier</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">match_expert</span><span class="p">,</span><span class="n">match_algori</span><span class="p">)</span>
+<span class="c1">#match_outlier =  np.logical_or(np.array(metadata_table.Outlier),np.array(metadata_table.LabOutlier))</span>
+<span class="n">match</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">match_outlier</span><span class="p">,</span><span class="n">match_code</span><span class="p">)</span>
+<span class="n">bbox</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+
+<span class="n">exps</span> <span class="o">=</span> <span class="n">metadata_table</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">match</span><span class="p">]</span>
+<span class="n">fig</span><span class="p">,</span><span class="n">axes</span> <span class="o">=</span> <span class="n">mab_utils</span><span class="o">.</span><span class="n">plot_the_nmr</span><span class="p">(</span><span class="n">exps</span><span class="p">,</span><span class="n">ncols</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+                                  <span class="n">levels</span><span class="o">=</span><span class="n">ssi_contours</span><span class="p">,</span>
+                                  <span class="n">color</span><span class="o">=</span><span class="n">contour_colors</span><span class="p">,</span>
+                                  <span class="o">**</span><span class="n">plot_dict</span><span class="p">)</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="o">.</span><span class="n">flatten</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">invert_xaxis</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">invert_yaxis</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">score</span><span class="p">,</span><span class="n">ax</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">metadata_table</span><span class="o">.</span><span class="n">ExptScore</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">match</span><span class="p">],</span><span class="n">axes</span><span class="o">.</span><span class="n">flatten</span><span class="p">()):</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.95</span><span class="p">,</span><span class="mf">0.95</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">score</span><span class="p">),</span><span class="n">ha</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">,</span><span class="n">va</span><span class="o">=</span><span class="s1">&#39;top&#39;</span><span class="p">,</span><span class="n">transform</span><span class="o">=</span><span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span><span class="n">bbox</span><span class="o">=</span><span class="n">bbox</span><span class="p">)</span>
+
+<span class="n">caption_text</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Contour plots of the NMR spectra identified as outliers by the algorithm &#39;</span> <span class="o">+</span>
+                <span class="s1">&#39;but not by the expert, annotated with their Z-scores and expert scores.&#39;</span>
+               <span class="p">)</span>
+<span class="n">width</span><span class="p">,</span><span class="n">height</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">get_size_inches</span><span class="p">()</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mf">0.25</span><span class="o">/</span><span class="n">height</span><span class="p">,</span><span class="n">caption_text</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span><span class="n">va</span><span class="o">=</span><span class="s1">&#39;top&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/home/local/NIST/dsheen/.conda/envs/default_outside/lib/python3.7/site-packages/matplotlib/contour.py:1000: UserWarning: The following kwargs were not used by contour: &#39;aspect&#39;
+  s)
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/mAb_outlier_detection_recursive_14_1.png" src="_images/mAb_outlier_detection_recursive_14_1.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Expert-level-2-outliers">
+<h3>Expert level-2 outliers<a class="headerlink" href="#Expert-level-2-outliers" title="Permalink to this headline">¶</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">match_code</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">code</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;D&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">code</span> <span class="ow">in</span> <span class="n">metadata_table</span><span class="o">.</span><span class="n">ExpCode</span><span class="o">.</span><span class="n">values</span><span class="p">])</span>
+<span class="n">match_outlier</span> <span class="o">=</span>  <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">score</span><span class="o">&gt;</span><span class="mi">1</span> <span class="k">for</span> <span class="n">score</span> <span class="ow">in</span> <span class="n">metadata_table</span><span class="o">.</span><span class="n">ExptScore</span><span class="o">.</span><span class="n">values</span><span class="p">])</span>
+<span class="c1">#match_outlier =  np.logical_or(np.array(metadata_table.Outlier),np.array(metadata_table.LabOutlier))</span>
+<span class="n">match</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">match_outlier</span><span class="p">,</span><span class="n">match_code</span><span class="p">)</span>
+<span class="n">bbox</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+
+<span class="n">exps</span> <span class="o">=</span> <span class="n">metadata_table</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">match</span><span class="p">]</span>
+<span class="n">fig</span><span class="p">,</span><span class="n">axes</span> <span class="o">=</span> <span class="n">mab_utils</span><span class="o">.</span><span class="n">plot_the_nmr</span><span class="p">(</span><span class="n">exps</span><span class="p">,</span><span class="n">ncols</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+                                  <span class="n">levels</span><span class="o">=</span><span class="n">ssi_contours</span><span class="p">,</span>
+                                  <span class="n">color</span><span class="o">=</span><span class="n">contour_colors</span><span class="p">,</span>
+                                  <span class="o">**</span><span class="n">plot_dict</span><span class="p">)</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="o">.</span><span class="n">flatten</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">invert_xaxis</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">invert_yaxis</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">score</span><span class="p">,</span><span class="n">ax</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">metadata_table</span><span class="o">.</span><span class="n">ExptScore</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">match</span><span class="p">],</span><span class="n">axes</span><span class="o">.</span><span class="n">flatten</span><span class="p">()):</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.95</span><span class="p">,</span><span class="mf">0.95</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">score</span><span class="p">),</span><span class="n">ha</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">,</span><span class="n">va</span><span class="o">=</span><span class="s1">&#39;top&#39;</span><span class="p">,</span><span class="n">transform</span><span class="o">=</span><span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span><span class="n">bbox</span><span class="o">=</span><span class="n">bbox</span><span class="p">)</span>
+
+<span class="n">caption_text</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Contour plots of the NMR spectra identified as outliers by the expert &#39;</span> <span class="o">+</span>
+                <span class="s1">&#39;annotated with their Z-scores and expert scores.&#39;</span>
+               <span class="p">)</span>
+<span class="n">width</span><span class="p">,</span><span class="n">height</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">get_size_inches</span><span class="p">()</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mf">0.25</span><span class="o">/</span><span class="n">height</span><span class="p">,</span><span class="n">caption_text</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span><span class="n">va</span><span class="o">=</span><span class="s1">&#39;top&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/mAb_outlier_detection_recursive_16_0.png" src="_images/mAb_outlier_detection_recursive_16_0.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Expert-level-1-outliers">
+<h3>Expert level-1 outliers<a class="headerlink" href="#Expert-level-1-outliers" title="Permalink to this headline">¶</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">match_code</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">code</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;D&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">code</span> <span class="ow">in</span> <span class="n">metadata_table</span><span class="o">.</span><span class="n">ExpCode</span><span class="o">.</span><span class="n">values</span><span class="p">])</span>
+<span class="n">match_outlier</span> <span class="o">=</span>  <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">score</span><span class="o">==</span><span class="mi">1</span> <span class="k">for</span> <span class="n">score</span> <span class="ow">in</span> <span class="n">metadata_table</span><span class="o">.</span><span class="n">ExptScore</span><span class="o">.</span><span class="n">values</span><span class="p">])</span>
+<span class="c1">#match_outlier =  np.logical_or(np.array(metadata_table.Outlier),np.array(metadata_table.LabOutlier))</span>
+<span class="n">match</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">match_outlier</span><span class="p">,</span><span class="n">match_code</span><span class="p">)</span>
+<span class="n">bbox</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+
+<span class="n">exps</span> <span class="o">=</span> <span class="n">metadata_table</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">match</span><span class="p">]</span>
+<span class="n">fig</span><span class="p">,</span><span class="n">axes</span> <span class="o">=</span> <span class="n">mab_utils</span><span class="o">.</span><span class="n">plot_the_nmr</span><span class="p">(</span><span class="n">exps</span><span class="p">,</span><span class="n">ncols</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+                                  <span class="n">levels</span><span class="o">=</span><span class="n">ssi_contours</span><span class="p">,</span>
+                                  <span class="n">color</span><span class="o">=</span><span class="n">contour_colors</span><span class="p">,</span>
+                                  <span class="o">**</span><span class="n">plot_dict</span><span class="p">)</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="o">.</span><span class="n">flatten</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">invert_xaxis</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">invert_yaxis</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">score</span><span class="p">,</span><span class="n">ax</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">metadata_table</span><span class="o">.</span><span class="n">ExptScore</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">match</span><span class="p">],</span><span class="n">axes</span><span class="o">.</span><span class="n">flatten</span><span class="p">()):</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.95</span><span class="p">,</span><span class="mf">0.95</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">score</span><span class="p">),</span><span class="n">ha</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">,</span><span class="n">va</span><span class="o">=</span><span class="s1">&#39;top&#39;</span><span class="p">,</span><span class="n">transform</span><span class="o">=</span><span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span><span class="n">bbox</span><span class="o">=</span><span class="n">bbox</span><span class="p">)</span>
+
+<span class="n">caption_text</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Contour plots of the NMR spectra identified as level-1 outliers by &#39;</span> <span class="o">+</span>
+                <span class="s1">&#39;the expert, annotated with their Z-scores and expert scores.&#39;</span>
+               <span class="p">)</span>
+
+<span class="n">width</span><span class="p">,</span><span class="n">height</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">get_size_inches</span><span class="p">()</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mf">0.25</span><span class="o">/</span><span class="n">height</span><span class="p">,</span><span class="n">caption_text</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span><span class="n">va</span><span class="o">=</span><span class="s1">&#39;top&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/mAb_outlier_detection_recursive_18_0.png" src="_images/mAb_outlier_detection_recursive_18_0.png" />
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">metadata_table</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;metadata_table_recursive.csv&#39;</span><span class="p">,</span><span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">keys_no_e</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;600&#39;</span><span class="p">,</span><span class="s1">&#39;700&#39;</span><span class="p">,</span><span class="s1">&#39;800&#39;</span><span class="p">]:</span>
+    <span class="n">keys_no_e</span> <span class="o">+=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">mab_project</span><span class="o">.</span><span class="n">Labels</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+                  <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;D&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">k</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">key</span><span class="p">)]</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">bbox_props</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;0.6&#39;</span><span class="p">,</span><span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+<span class="n">f</span> <span class="o">=</span> <span class="n">mab_project</span><span class="o">.</span><span class="n">plot_histograms</span><span class="p">(</span><span class="n">jeffries</span><span class="p">,</span><span class="n">numcols</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="n">plot_range</span><span class="o">=</span><span class="n">keys_no_e</span><span class="p">)</span>
+<span class="n">size</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">get_size_inches</span><span class="p">()</span>
+<span class="n">vert_size</span> <span class="o">=</span> <span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="c1">#*1.75</span>
+<span class="n">horz_size</span> <span class="o">=</span> <span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="mf">1.75</span>
+<span class="n">f</span><span class="o">.</span><span class="n">set_size_inches</span><span class="p">((</span><span class="n">horz_size</span><span class="p">,</span><span class="n">vert_size</span><span class="p">,))</span>
+<span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">axes</span><span class="p">:</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">texts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">t_str</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">get_text</span><span class="p">()</span>
+    <span class="n">type_string</span> <span class="o">=</span> <span class="s1">&#39;-S-&#39;</span>
+    <span class="k">if</span> <span class="s1">&#39;-F-&#39;</span> <span class="ow">in</span> <span class="n">t_str</span><span class="p">:</span><span class="n">type_string</span> <span class="o">=</span> <span class="s1">&#39;-F-&#39;</span>
+    <span class="k">if</span> <span class="s1">&#39;600&#39;</span> <span class="ow">in</span> <span class="n">t_str</span><span class="p">:</span><span class="n">t_str</span> <span class="o">=</span> <span class="n">t_str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">type_string</span><span class="o">+</span><span class="s1">&#39;600&#39;</span><span class="p">,</span><span class="s1">&#39;, 500 to 600 MHz&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s1">&#39;700&#39;</span> <span class="ow">in</span> <span class="n">t_str</span><span class="p">:</span><span class="n">t_str</span> <span class="o">=</span> <span class="n">t_str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">type_string</span><span class="o">+</span><span class="s1">&#39;700&#39;</span><span class="p">,</span><span class="s1">&#39;, 700 to 750 MHz&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s1">&#39;800&#39;</span> <span class="ow">in</span> <span class="n">t_str</span><span class="p">:</span><span class="n">t_str</span> <span class="o">=</span> <span class="n">t_str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">type_string</span><span class="o">+</span><span class="s1">&#39;800&#39;</span><span class="p">,</span><span class="s1">&#39;, 800 to 950 MHz&#39;</span><span class="p">)</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">set_text</span><span class="p">(</span><span class="n">t_str</span><span class="p">)</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">set_bbox</span><span class="p">(</span><span class="n">bbox_props</span><span class="p">)</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">set_position</span><span class="p">((</span><span class="mf">0.95</span><span class="p">,</span><span class="mf">0.9</span><span class="p">))</span>
+<span class="n">f</span><span class="o">.</span><span class="n">texts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_text</span><span class="p">(</span><span class="s1">&#39;Sample mean interspectral distance, $D_{i,k}$&#39;</span><span class="p">)</span>
+<span class="n">f</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mf">0.08</span><span class="p">,</span><span class="n">bottom</span><span class="o">=</span><span class="mf">0.08</span><span class="p">,</span><span class="n">wspace</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/mAb_outlier_detection_recursive_21_0.png" src="_images/mAb_outlier_detection_recursive_21_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[54]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">means</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">threshes</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">names</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">mab_project</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">keys_no_e</span><span class="p">:</span>
+        <span class="n">pop</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">jeffries</span><span class="p">]</span><span class="o">.</span><span class="n">population</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="n">pop</span><span class="o">.</span><span class="n">params</span>
+        <span class="n">dist</span> <span class="o">=</span> <span class="n">pop</span><span class="o">.</span><span class="n">distribution</span>
+        <span class="n">mean</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="o">*</span><span class="n">params</span><span class="p">)</span>
+        <span class="n">thresh</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="mf">0.9495</span><span class="p">,</span><span class="o">*</span><span class="n">params</span><span class="p">)</span>
+
+        <span class="n">name</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">name</span>
+
+
+
+        <span class="n">type_string</span> <span class="o">=</span> <span class="s1">&#39;-S-&#39;</span>
+        <span class="k">if</span> <span class="s1">&#39;-F-&#39;</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span><span class="n">type_string</span> <span class="o">=</span> <span class="s1">&#39;-F-&#39;</span>
+        <span class="k">if</span> <span class="s1">&#39;600&#39;</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">type_string</span><span class="o">+</span><span class="s1">&#39;600&#39;</span><span class="p">,</span><span class="s1">&#39;, low&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;700&#39;</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">type_string</span><span class="o">+</span><span class="s1">&#39;700&#39;</span><span class="p">,</span><span class="s1">&#39;, med&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;800&#39;</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">type_string</span><span class="o">+</span><span class="s1">&#39;800&#39;</span><span class="p">,</span><span class="s1">&#39;, high&#39;</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">: </span><span class="si">{:5.3f}</span><span class="s1"> </span><span class="si">{:5.3f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="n">mean</span><span class="p">,</span><span class="n">thresh</span><span class="p">))</span>
+
+        <span class="n">means</span> <span class="o">+=</span> <span class="p">[</span><span class="n">mean</span><span class="p">]</span>
+        <span class="n">threshes</span> <span class="o">+=</span> <span class="p">[</span><span class="n">thresh</span><span class="p">]</span>
+        <span class="n">names</span> <span class="o">+=</span> <span class="p">[</span><span class="n">name</span><span class="p">]</span>
+
+        <span class="c1">#print(,params)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+D2A, low: 0.414 0.500
+D2A, med: 0.319 0.515
+D2A, high: 0.317 0.370
+D2B, low: 0.514 0.770
+D2B, med: 0.507 0.814
+D2B, high: 1.121 1.622
+D2C, low: 0.583 0.700
+D2C, med: 0.307 0.440
+D2C, high: 0.457 0.588
+D2D, low: 0.494 0.729
+D2D, med: 0.468 0.676
+D2D, high: 0.962 1.270
+D2E, low: 0.311 0.491
+D2E, med: 0.424 0.599
+D2E, high: 0.775 1.003
+D3A, low: 0.504 0.756
+D3A, med: 0.462 0.638
+D3A, high: 0.800 1.064
+D3B, low: 0.825 1.183
+D3B, med: 0.577 0.669
+D3B, high: 1.537 2.065
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[80]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">fig</span><span class="p">,</span><span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+
+<span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">means</span><span class="p">,</span><span class="n">threshes</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Mean interspectral distance&#39;</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;95 </span><span class="si">% c</span><span class="s1">onfidence interval&#39;</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mf">1.5</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mf">1.5</span><span class="p">])</span>
+<span class="k">for</span> <span class="n">n</span><span class="p">,</span><span class="n">m</span><span class="p">,</span><span class="n">t</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">names</span><span class="p">,</span><span class="n">means</span><span class="p">,</span><span class="n">threshes</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">t</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>    <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">m</span><span class="o">-</span><span class="mf">0.02</span><span class="p">,</span><span class="n">t</span><span class="p">,</span><span class="n">n</span><span class="p">,</span><span class="n">ha</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">,</span><span class="n">va</span><span class="o">=</span><span class="s1">&#39;bottom&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/mAb_outlier_detection_recursive_23_0.png" src="_images/mAb_outlier_detection_recursive_23_0.png" />
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+        </div>
+        <div class="sidebar">
+          <h3>Table of Contents</h3>
+          <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Project.html">The interlab Project class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Subobjects.html">Subobjects within the Project class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Metrics.html">Distance metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="analysis_demo.html">Example interlaboratory study</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="nist_mab.html">Chemometric Outlier Detection and Classification of 2D-NMR Spectra</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="nist_mab.html#contents">Contents</a></li>
+</ul>
+</li>
+</ul>
+
+          <div role="search">
+            <h3 style="margin-top: 1.5em;">Search</h3>
+            <form class="search" action="search.html" method="get">
+                <input type="text" name="q" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+            </form>
+          </div>
+        </div>
+        <div class="clearer"></div>
+      </div>
+    </div>
+
+    <div class="footer-wrapper">
+      <div class="footer">
+        <div class="left">
+          <div role="navigation" aria-label="related navigaton">
+            <a href="mAb_outlier_detection_non-recursive.html" title="Outlier Detection: Non-Recursive"
+              >previous</a> |
+            <a href="mAb_outlier_detection_non-recursive_single-pop.html" title="Outlier Detection: Refit to single population"
+              >next</a> |
+            <a href="genindex.html" title="General Index"
+              >index</a>
+          </div>
+          <div role="note" aria-label="source link">
+              <br/>
+              <a href="_sources/mAb_outlier_detection_recursive.ipynb.txt"
+                rel="nofollow">Show Source</a>
+          </div>
+        </div>
+
+        <div class="right">
+          
+    <div class="footer" role="contentinfo">
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div>
+        </div>
+        <div class="clearer"></div>
+      </div>
+    </div>
+
+  </body>
+</html>

@@ -15,13 +15,15 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
     <script type="text/javascript" src="https://pages.nist.gov/nist-header-footer/js/jquery-1.9.0.min.js"></script>
     <script type="text/javascript" src="https://pages.nist.gov/nist-header-footer/js/nist-header-footer.js"></script>
     <script id="_fed_an_ua_tag" type="text/javascript" src="https://dap.digitalgov.gov/Universal-Federated-Analytics-Min.js?agency=NIST&subagency=github&pua=UA-42404149-54&yt=true&exts=ppsx,pps,f90,sch,rtf,wrl,txz,m1v,xlsm,msi,xsd,f,tif,eps,mpg,xml,pl,xlt,c"></script>
     <script type="text/javascript" src="https://code.jquery.com/jquery.1.12.4.min.js"></script>
     <script type="text/javascript" src="https://pages.nist.gov/leaveNotice/js/jquery.leaveNotice-nist.min.js"></script>
     <script type="text/javascript" src="../_static/leave_notice.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" /> 
   </head><body>
@@ -60,7 +62,7 @@
     <span class="sd">&#39;&#39;&#39;Returns exactly the function&#39;s positional arguments, ignoring any keyword arguments&#39;&#39;&#39;</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="c1">#We only passed one argument to the function. We want to return arg, not (arg)</span>
-    <span class="k">return</span> <span class="n">arg</span>
+    <span class="k">return</span> <span class="n">args</span>
 
 <span class="k">def</span> <span class="nf">g_formatter</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="n">a</span><span class="p">,</span><span class="n">b</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{:.2e}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;e&#39;</span><span class="p">)</span>
@@ -383,8 +385,8 @@
 <span class="sd">        :key mask: If present, masks some elements of data</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         
-        <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span>
+        <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
         
         <span class="n">std</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>        
         <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span><span class="n">floc</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
@@ -395,7 +397,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">zscores</span> <span class="o">=</span> <span class="n">std</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">CDF</span><span class="p">)</span>
         
         <span class="c1">#Explicitly calculate Z if the distribution is lognorm, because this will give more reliable results for large Z</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span> <span class="ow">is</span> <span class="n">sp</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">lognorm</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distribution</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="n">sp</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">lognorm</span><span class="p">):</span>
             <span class="n">mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
             <span class="n">stdev</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">zscores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">mean</span><span class="p">))</span> <span class="o">/</span> <span class="n">stdev</span><span class="p">)</span>
@@ -404,30 +406,40 @@
         
         <span class="k">return</span>
     
-    <span class="k">def</span> <span class="nf">find_outliers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">recursive</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">support_fraction</span><span class="o">=</span><span class="mf">0.6</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">find_outliers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">recursive</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">support_fraction</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span><span class="n">final_screen</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Finds the outliers of the distribution</span>
 <span class="sd">        </span>
 <span class="sd">        :key recursive: If true, finds outliers and refit until all outliers have been removed</span>
 <span class="sd">        :key support_fraction: Fraction of values that are guaranteed to be retained</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="n">max_percentile</span> <span class="o">=</span> <span class="mf">0.9495</span> <span class="c1">#95% confidence limint, respecting support fraction (respecting 3 sig figs rounding)</span>
+        <span class="n">max_ignore_support_fraction</span> <span class="o">=</span> <span class="mf">0.9895</span> <span class="c1">#99% confidence limit, ignoring support fraction (3 sig fig rounding)</span>
+        
         <span class="n">std</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">zlimit</span> <span class="o">=</span> <span class="n">std</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="mf">0.9495</span><span class="p">)</span>
+        <span class="n">zlimit</span> <span class="o">=</span> <span class="n">std</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">max_percentile</span><span class="p">)</span>
+        <span class="n">zlimit_ignore</span> <span class="o">=</span> <span class="n">std</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">max_ignore_support_fraction</span><span class="p">)</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">fit_zscores</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
         <span class="n">max_num_outliers</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="mi">1</span><span class="o">-</span><span class="n">support_fraction</span><span class="p">)</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">))</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">outlier_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
         
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">recursive</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">outlier_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">zscores</span> <span class="o">&lt;</span> <span class="n">zlimit</span> <span class="c1">#If not recursive, just get all outliers and leave</span>
-            <span class="k">return</span>
+<span class="c1">#         if not recursive:</span>
+<span class="c1">#             for i in range(max_num_outliers):</span>
+<span class="c1">#                 self.outlier_mask = self.zscores &lt; zlimit #If not recursive, just get all outliers and leave</span>
+<span class="c1">#             return</span>
         
+        <span class="c1"># Note that, because we always use a support fraction, we always want to remove outliers one-by-one</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_num_outliers</span><span class="p">):</span>
             <span class="n">zmax</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">zscores</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">outlier_mask</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="c1">#Get the biggest z-score still considered in the distribution</span>
             <span class="k">if</span> <span class="n">zmax</span> <span class="o">&lt;</span> <span class="n">zlimit</span><span class="p">:</span> <span class="k">break</span> <span class="c1">#If the biggest z-score is within the zlimit, break from the loop</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">outlier_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">zscores</span> <span class="o">&lt;</span> <span class="n">zmax</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">fit_zscores</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">outlier_mask</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">outlier_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">zscores</span> <span class="o">&lt;</span> <span class="n">zlimit</span>
+            <span class="c1">#Recalculate z-scores only if recursive</span>
+            <span class="k">if</span> <span class="n">recursive</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_zscores</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">outlier_mask</span><span class="p">)</span> 
+        <span class="k">if</span> <span class="n">final_screen</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">outlier_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">zscores</span> <span class="o">&lt;</span> <span class="n">zlimit_ignore</span>
+            <span class="k">if</span> <span class="n">recursive</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_zscores</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">outlier_mask</span><span class="p">)</span> 
         <span class="k">return</span>
     
     <span class="k">def</span> <span class="nf">minmax</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -749,6 +761,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../Subobjects.html">Subobjects within the Project class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../Metrics.html">Distance metrics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../analysis_demo.html">Example interlaboratory study</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../nist_mab.html">Chemometric Outlier Detection and Classification of 2D-NMR Spectra</a></li>
 </ul>
 
           <div role="search">
@@ -779,7 +792,7 @@
         <div class="right">
           
     <div class="footer" role="contentinfo">
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.0.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
     </div>
         </div>
         <div class="clearer"></div>

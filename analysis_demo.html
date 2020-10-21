@@ -15,15 +15,18 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
     <script type="text/javascript" src="https://pages.nist.gov/nist-header-footer/js/jquery-1.9.0.min.js"></script>
     <script type="text/javascript" src="https://pages.nist.gov/nist-header-footer/js/nist-header-footer.js"></script>
     <script id="_fed_an_ua_tag" type="text/javascript" src="https://dap.digitalgov.gov/Universal-Federated-Analytics-Min.js?agency=NIST&subagency=github&pua=UA-42404149-54&yt=true&exts=ppsx,pps,f90,sch,rtf,wrl,txz,m1v,xlsm,msi,xsd,f,tif,eps,mpg,xml,pl,xlt,c"></script>
     <script type="text/javascript" src="https://code.jquery.com/jquery.1.12.4.min.js"></script>
     <script type="text/javascript" src="https://pages.nist.gov/leaveNotice/js/jquery.leaveNotice-nist.min.js"></script>
     <script type="text/javascript" src="_static/leave_notice.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Chemometric Outlier Detection and Classification of 2D-NMR Spectra" href="nist_mab.html" />
     <link rel="prev" title="Distance metrics" href="Metrics.html" /> 
   </head><body>
     <div class="header-wrapper" role="banner">
@@ -33,6 +36,8 @@
         <div class="rel" role="navigation" aria-label="related navigation">
           <a href="Metrics.html" title="Distance metrics"
              accesskey="P">previous</a> |
+          <a href="nist_mab.html" title="Chemometric Outlier Detection and Classification of 2D-NMR Spectra"
+             accesskey="N">next</a> |
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a>
         </div>
@@ -102,18 +107,18 @@ div.nblast {
 
 /* input prompt */
 div.nbinput div.prompt pre {
-    color: #303F9F;
+    color: #307FC1;
 }
 
 /* output prompt */
 div.nboutput div.prompt pre {
-    color: #D84315;
+    color: #BF5B3D;
 }
 
 /* all prompts */
 div.nbinput div.prompt,
 div.nboutput div.prompt {
-    min-width: 7ex;
+    min-width: 4ex;
     padding-top: 0.4em;
     padding-right: 0.4em;
     text-align: right;
@@ -153,9 +158,9 @@ div.nboutput div.output_area {
 
 /* input area */
 div.nbinput div.input_area {
-    border: 1px solid #cfcfcf;
+    border: 1px solid #e0e0e0;
     border-radius: 2px;
-    background: #f7f7f7;
+    background: #f5f5f5;
 }
 
 /* override MathJax center alignment in output cells */
@@ -163,7 +168,7 @@ div.nboutput div[class*=MathJax] {
     text-align: left !important;
 }
 
-/* override sphinx.ext.pngmath center alignment in output cells */
+/* override sphinx.ext.imgmath center alignment in output cells */
 div.nboutput div.math p {
     text-align: left;
 }
@@ -212,6 +217,40 @@ div.nboutput div.output_area.stderr {
 
 .ansi-bold { font-weight: bold; }
 .ansi-underline { text-decoration: underline; }
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
 </style>
 <div class="section" id="Example-interlaboratory-study">
 <h1>Example interlaboratory study<a class="headerlink" href="#Example-interlaboratory-study" title="Permalink to this headline">¶</a></h1>
@@ -219,8 +258,7 @@ div.nboutput div.output_area.stderr {
 <h2>Imports<a class="headerlink" href="#Imports" title="Permalink to this headline">¶</a></h2>
 <p>Import the mumpce interface and the interface to interlab.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [1]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -230,8 +268,7 @@ div.nboutput div.output_area.stderr {
 </div>
 <p>Import Numerical Python and Pandas</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [2]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -249,8 +286,7 @@ div.nboutput div.output_area.stderr {
 <p><cite>interlab</cite> is agnostic to the way that your data is arranged. All that’s required is that you have the experimental measurements divided logically into groups, where each group represents all the measurements of one sample. The exact way you do this is up to you; this example shows how to do create a <a class="reference internal" href="Project.html#project.Project" title="project.Project"><code class="xref py py-class docutils literal notranslate"><span class="pre">Project</span></code></a> using Pandas and an Excel workbook.</p>
 <p>We’ve decided to remove some of the NMR data in the region of the water signal, so let’s define the range that we’ll actually use.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [3]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -260,8 +296,7 @@ div.nboutput div.output_area.stderr {
 </div>
 <p>Read the Excel workbook that contains the project data. We’re using Pandas to read all the sheets of this workbook. This will result in a dictionary of Pandas DataFrame objects that we will have to parse.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [4]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -271,8 +306,7 @@ div.nboutput div.output_area.stderr {
 </div>
 <p>Each sheet in the workbook corresponds to the NMR spectra from one particular sample. The name of each sheet is the name of the sample, which are then the keys of our <cite>df_dict</cite>. We’ll use these keys as the keys for the various dictionaries we make before we create the <a class="reference internal" href="Project.html#project.Project" title="project.Project"><code class="xref py py-class docutils literal notranslate"><span class="pre">Project</span></code></a>.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [5]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -291,8 +325,7 @@ div.nboutput div.output_area.stderr {
 </div>
 <p>The sheets are arranged such that each row corresponds to an NMR bin and each column represents the NMR measurements from one facility. We’ll extract the index values as the X data for our spectra and the column values as our list of facility labels. The X data have to be the same across all measurements, so we don’t save this as a dictionary. However, the facility labels might be different, because not every facility may have values for every experiment. This needs to be a dictionary with one element for every experiment.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [6]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -319,8 +352,7 @@ div.nboutput div.output_area.stderr {
 </div>
 <p>Here, we define which metrics we’ll be using for the interlab analysis.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [7]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -341,8 +373,7 @@ div.nboutput div.output_area.stderr {
 <h3>Reading project data<a class="headerlink" href="#Reading-project-data" title="Permalink to this headline">¶</a></h3>
 <p>Now that the metadata have all been read, we will actually read the data and create the data dictionaries. We extract the raw data for each experiment group directly from the dataframe, after we remove the water-signal data that we didn’t want. This data goes into <cite>rawdata_dict</cite>. We use <cite>fix_spectrum</cite> to remove negative and zero values, then we sum-normalize the spectra. This goes into <cite>data_dict</cite>, which will actually be used for the interlab analysis.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [8]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -363,8 +394,7 @@ div.nboutput div.output_area.stderr {
 <h3>Creating the Project<a class="headerlink" href="#Creating-the-Project" title="Permalink to this headline">¶</a></h3>
 <p>Now we have enough data to create the <a class="reference internal" href="Project.html#project.Project" title="project.Project"><code class="xref py py-class docutils literal notranslate"><span class="pre">Project</span></code></a> object. When created, the Project will read the <cite>rawdata_dict</cite>, <cite>data_dict</cite>, and <cite>Labels_dict</cite>, associating each element of these dictionaries with an <a class="reference internal" href="Subobjects.html#utilities.ExperimentGroup" title="utilities.ExperimentGroup"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExperimentGroup</span></code></a> object.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [9]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -387,8 +417,7 @@ div.nboutput div.output_area.stderr {
 <h4>Interspectral covariance matrix<a class="headerlink" href="#Interspectral-covariance-matrix" title="Permalink to this headline">¶</a></h4>
 <p>Since we’re using Mahalanobis distance as a metric, we need to calculate the inverse covariance matrix. As there are fewer observations than variables, we know the covariance matrix will be singular, so we need to use the singular value decomposition to calculate it.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [10]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -401,8 +430,7 @@ div.nboutput div.output_area.stderr {
 <h4>Distance matrices<a class="headerlink" href="#Distance-matrices" title="Permalink to this headline">¶</a></h4>
 <p>Now we calculate the distance matrices for each group,</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [11]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -414,31 +442,31 @@ div.nboutput div.output_area.stderr {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"model_id": "bfe4a97d2a05464f8f6a52a99ce9f0ae", "version_major": 2, "version_minor": 0}</script></div>
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "30e99f3714364062acc99cbb7ae4dba8", "version_major": 2, "version_minor": 0}</script></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"model_id": "c371b37e8f0046bb955f40042c33e7af", "version_major": 2, "version_minor": 0}</script></div>
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "4927610783914303a108f723b64a1f76", "version_major": 2, "version_minor": 0}</script></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"model_id": "2a8824fde74247f785a2a90bbffe40a7", "version_major": 2, "version_minor": 0}</script></div>
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "64638315d22f4a44b14e3158f1099fc4", "version_major": 2, "version_minor": 0}</script></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"model_id": "eccf0984f2354c1dbb5ecfb2d1e2247d", "version_major": 2, "version_minor": 0}</script></div>
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "fe16ffe8633f48f08fcb2bcc04a14065", "version_major": 2, "version_minor": 0}</script></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"model_id": "569dac43093046969fa5b91a596e192e", "version_major": 2, "version_minor": 0}</script></div>
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "fa36d0e8b6da46b590105ecdea114907", "version_major": 2, "version_minor": 0}</script></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
@@ -450,8 +478,7 @@ div.nboutput div.output_area.stderr {
 </div>
 <p>We can plot the spectral data and the distance matrices. Note that, if <cite>plot_range</cite> isn’t specified, this function will plot all of them</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [12]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -473,8 +500,7 @@ div.nboutput div.output_area.stderr {
 <h3>Sample-level scores and outliers<a class="headerlink" href="#Sample-level-scores-and-outliers" title="Permalink to this headline">¶</a></h3>
 <p>Fit the scores to the distances, and then find the outliers.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [13]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -487,31 +513,31 @@ div.nboutput div.output_area.stderr {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"model_id": "88dd2cf5560d4b67bb7ff78c206c7ef3", "version_major": 2, "version_minor": 0}</script></div>
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "a98f1c736eee4933b57aeb1d9c64f487", "version_major": 2, "version_minor": 0}</script></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"model_id": "056866b0010d49e6a1c9c2c3fbd3679c", "version_major": 2, "version_minor": 0}</script></div>
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "61c09d6a12ed40fabdee5487c8dbbb8d", "version_major": 2, "version_minor": 0}</script></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"model_id": "ec613cfc50e44d1cb003cf8848add27d", "version_major": 2, "version_minor": 0}</script></div>
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "8878819a44894feb8dc5ae8c855cab6c", "version_major": 2, "version_minor": 0}</script></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"model_id": "189ee3c8b2724e4c9363641883176877", "version_major": 2, "version_minor": 0}</script></div>
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "c67097db588749d29676cf6ba3699952", "version_major": 2, "version_minor": 0}</script></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"model_id": "1bb8c1825b514bf9b712d0f97cad2944", "version_major": 2, "version_minor": 0}</script></div>
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "2f95a8c866564e69b3ffdf784ddef870", "version_major": 2, "version_minor": 0}</script></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
@@ -525,31 +551,31 @@ div.nboutput div.output_area.stderr {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"model_id": "f88d578d3bd74a49ba889b11ddc5484c", "version_major": 2, "version_minor": 0}</script></div>
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "5d07af2bb5f2404baf00942815bb6ea3", "version_major": 2, "version_minor": 0}</script></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"model_id": "f00df518784940859e8852330d1a79eb", "version_major": 2, "version_minor": 0}</script></div>
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "7762c72c3acd47e6952470d495a16b77", "version_major": 2, "version_minor": 0}</script></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"model_id": "ae7a1af4200c4fb58f29c6fbc57b60be", "version_major": 2, "version_minor": 0}</script></div>
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "cbc31f67549b4896b78f2cc319ba487c", "version_major": 2, "version_minor": 0}</script></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"model_id": "e7ef18aaee2540ad93de314ed08a6992", "version_major": 2, "version_minor": 0}</script></div>
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "533abcd2db21416da114c0c9c1b09551", "version_major": 2, "version_minor": 0}</script></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"model_id": "286dc86cab02400baf4c488d6a4f78c0", "version_major": 2, "version_minor": 0}</script></div>
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "11f8df894057459c8765def15701c195", "version_major": 2, "version_minor": 0}</script></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
@@ -562,8 +588,7 @@ div.nboutput div.output_area.stderr {
 <p>We can also plot histograms and bar charts of the average interspectral distances. These distributions are where the Z-scores come from.</p>
 <p>Again, <cite>plot_range</cite> is optional.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [14]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -595,8 +620,7 @@ div.nboutput div.output_area.stderr {
 <h3>Interlaboratory statistical projection<a class="headerlink" href="#Interlaboratory-statistical-projection" title="Permalink to this headline">¶</a></h3>
 <p>The Z-scores can then be cast as an array, which we will then use to calculate the lab-level scores and determine outliers. Note how, in this case, we are not screening outlier spectra before we perform our analysis.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [15]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -611,7 +635,7 @@ div.nboutput div.output_area.stderr {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"model_id": "1cff4b6b3b5b45918951ee4383efdc04", "version_major": 2, "version_minor": 0}</script></div>
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "1bd7c30a96394fc399ed6533232c371b", "version_major": 2, "version_minor": 0}</script></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
@@ -647,8 +671,7 @@ div.nboutput div.output_area.stderr {
 <h3>Laboratory-level scoring and outliers<a class="headerlink" href="#Laboratory-level-scoring-and-outliers" title="Permalink to this headline">¶</a></h3>
 <p>Find the outliers and plot the lab-level Z-scores as well as the statistical projection</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [16]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -663,7 +686,7 @@ div.nboutput div.output_area.stderr {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"model_id": "4307fa7556bb4f53a5ccf0f4ee28a1c9", "version_major": 2, "version_minor": 0}</script></div>
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "6d0744bad3c44273bced6002d2676ace", "version_major": 2, "version_minor": 0}</script></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
@@ -688,8 +711,7 @@ div.nboutput div.output_area.stderr {
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [17]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -706,8 +728,7 @@ div.nboutput div.output_area.stderr {
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [18]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -740,8 +761,7 @@ div.nboutput div.output_area.stderr {
 <h3>Accessing Experiment Groups<a class="headerlink" href="#Accessing-Experiment-Groups" title="Permalink to this headline">¶</a></h3>
 <p>The individual <code class="xref py py-class docutils literal notranslate"><span class="pre">ExperimentGroup</span></code> objects can be accessed as if the <a class="reference internal" href="Project.html#project.Project" title="project.Project"><code class="xref py py-class docutils literal notranslate"><span class="pre">Project</span></code></a> were a dictionary:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [19]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -763,8 +783,7 @@ div.nboutput div.output_area.stderr {
 </div>
 <p>You can access multiple <code class="xref py py-class docutils literal notranslate"><span class="pre">ExperimentGroup</span></code> objects by passing a list of names.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [20]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -794,8 +813,7 @@ div.nboutput div.output_area.stderr {
 <h3>Accessing Distance Metrics<a class="headerlink" href="#Accessing-Distance-Metrics" title="Permalink to this headline">¶</a></h3>
 <p>Individual <a class="reference internal" href="Subobjects.html#utilities.DistanceMetric" title="utilities.DistanceMetric"><code class="xref py py-class docutils literal notranslate"><span class="pre">DistanceMetric</span></code></a> objects for an <code class="xref py py-class docutils literal notranslate"><span class="pre">ExperimentGroup</span></code> can be accessed by array-like indexing:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [21]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -810,12 +828,11 @@ div.nboutput div.output_area.stderr {
 </div>
 </div>
 <div class="nboutput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>Out[21]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>&lt;matplotlib.colorbar.Colorbar at 0x7fd46f65f588&gt;
+<span></span>&lt;matplotlib.colorbar.Colorbar at 0x7fa4005ece48&gt;
 </pre></div>
 </div>
 </div>
@@ -828,8 +845,7 @@ div.nboutput div.output_area.stderr {
 </div>
 <p>Multiple <code class="xref py py-class docutils literal notranslate"><span class="pre">DistanceMetric</span></code> objects can be accessed by passing a list.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [22]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -856,8 +872,7 @@ div.nboutput div.output_area.stderr {
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [ ]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -887,6 +902,7 @@ div.nboutput div.output_area.stderr {
 <li class="toctree-l2"><a class="reference internal" href="#Accessing-data-within-a-Project">Accessing data within a Project</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="nist_mab.html">Chemometric Outlier Detection and Classification of 2D-NMR Spectra</a></li>
 </ul>
 
           <div role="search">
@@ -909,6 +925,8 @@ div.nboutput div.output_area.stderr {
           <div role="navigation" aria-label="related navigaton">
             <a href="Metrics.html" title="Distance metrics"
               >previous</a> |
+            <a href="nist_mab.html" title="Chemometric Outlier Detection and Classification of 2D-NMR Spectra"
+              >next</a> |
             <a href="genindex.html" title="General Index"
               >index</a>
           </div>
@@ -922,7 +940,7 @@ div.nboutput div.output_area.stderr {
         <div class="right">
           
     <div class="footer" role="contentinfo">
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.0.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
     </div>
         </div>
         <div class="clearer"></div>

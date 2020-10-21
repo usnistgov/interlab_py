@@ -15,13 +15,15 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
     <script type="text/javascript" src="https://pages.nist.gov/nist-header-footer/js/jquery-1.9.0.min.js"></script>
     <script type="text/javascript" src="https://pages.nist.gov/nist-header-footer/js/nist-header-footer.js"></script>
     <script id="_fed_an_ua_tag" type="text/javascript" src="https://dap.digitalgov.gov/Universal-Federated-Analytics-Min.js?agency=NIST&subagency=github&pua=UA-42404149-54&yt=true&exts=ppsx,pps,f90,sch,rtf,wrl,txz,m1v,xlsm,msi,xsd,f,tif,eps,mpg,xml,pl,xlt,c"></script>
     <script type="text/javascript" src="https://code.jquery.com/jquery.1.12.4.min.js"></script>
     <script type="text/javascript" src="https://pages.nist.gov/leaveNotice/js/jquery.leaveNotice-nist.min.js"></script>
     <script type="text/javascript" src="../_static/leave_notice.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" /> 
   </head><body>
@@ -56,6 +58,7 @@
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
 <span class="kn">from</span> <span class="nn">sklearn</span> <span class="k">import</span> <span class="n">preprocessing</span> <span class="k">as</span> <span class="n">skpp</span>
+<span class="kn">from</span> <span class="nn">sklearn</span> <span class="k">import</span> <span class="n">impute</span> <span class="k">as</span> <span class="n">skimp</span>
 
 <span class="kn">import</span> <span class="nn">plot_utils</span> <span class="k">as</span> <span class="nn">plu</span>
 
@@ -201,7 +204,10 @@
                               <span class="n">distribution</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_distribution_function</span><span class="p">,</span>
                               <span class="c1">#mahalanobis_dict=self.mahalanobis_dict</span>
                              <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">experiment_groups</span> <span class="o">+=</span> <span class="p">[</span><span class="n">ExperimentGroup</span><span class="p">(</span><span class="o">**</span><span class="n">group_keyw</span><span class="p">)]</span>
+            <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">experiment_groups</span> <span class="o">+=</span> <span class="p">[</span><span class="n">ExperimentGroup</span><span class="p">(</span><span class="o">**</span><span class="n">group_keyw</span><span class="p">)]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Group </span><span class="si">{}</span><span class="s1"> has fewer than 3 measurements, not creating&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
         
         <span class="k">return</span>
     
@@ -454,7 +460,7 @@
         <span class="n">no_exp_for_lab</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">zscores_array</span><span class="p">),</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         
         <span class="c1">#Impute the missing Z scores by replacing all nan values with the median</span>
-        <span class="n">imp</span> <span class="o">=</span>  <span class="n">skpp</span><span class="o">.</span><span class="n">Imputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s1">&#39;median&#39;</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="n">imputation_axis</span><span class="p">)</span> 
+        <span class="n">imp</span> <span class="o">=</span>  <span class="n">skimp</span><span class="o">.</span><span class="n">SimpleImputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s1">&#39;median&#39;</span><span class="p">)</span><span class="c1">#,axis=imputation_axis) </span>
         <span class="n">zscores_imputed</span> <span class="o">=</span> <span class="n">imp</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">zscores_array</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="o">~</span><span class="n">no_exp_for_lab</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
         
         <span class="c1">#Load the imputed score array into the interlab array object</span>
@@ -800,6 +806,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../Subobjects.html">Subobjects within the Project class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../Metrics.html">Distance metrics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../analysis_demo.html">Example interlaboratory study</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../nist_mab.html">Chemometric Outlier Detection and Classification of 2D-NMR Spectra</a></li>
 </ul>
 
           <div role="search">
@@ -830,7 +837,7 @@
         <div class="right">
           
     <div class="footer" role="contentinfo">
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.0.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
     </div>
         </div>
         <div class="clearer"></div>

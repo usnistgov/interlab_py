@@ -1,4 +1,4 @@
-from utilities import ExperimentGroup,InterlabArray,idfunc
+from .utilities import ExperimentGroup,InterlabArray,idfunc
 
 import math
 import numpy as np
@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 from sklearn import preprocessing as skpp
 
-import plot_utils as plu
+from . import plot_utils as plu
 
 
 #We use the tqdm notebook function and its widgets in order to run a lot of things, but we don't actually need it

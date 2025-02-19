@@ -245,8 +245,10 @@ class DistanceMetric(object):
                 raise ValueError('Must define the inverse covariance matrix if metric is mahalanobis')
             VI=self.mahalanobis_dict['VI']
             #significant_components=mahalanobis_dict['significant_components']
+
+        kws = {"VI": VI} if VI is not None else {}
         
-        distance_condensed = sp.spatial.distance.pdist(data,self.function,VI=VI)
+        distance_condensed = sp.spatial.distance.pdist(data,self.function, **kws)
         self.distance_matrix = sp.spatial.distance.squareform(distance_condensed)
         
         

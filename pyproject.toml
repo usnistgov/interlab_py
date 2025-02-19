@@ -41,6 +41,7 @@ dependencies = [
     "numpy",
     "scikit-learn",
     "scipy",
+    "matplotlib",
 ]
 urls.Documentation = "https://pages.nist.gov/interlab_py/"
 urls.Homepage = "https://github.com/wpk-nist-gov/interlab_py"
@@ -55,6 +56,7 @@ dev = [
     { include-group = "uvxrun" },
 ]
 test = [
+    { include-group = "pandas" },
     { include-group = "test-extras" },
 ]
 docs = [
@@ -74,6 +76,7 @@ dev-extras = [
     "nbclient>=0.10.0",
     "nox>=2024.4.15",
     "pytest-accept",
+    { include-group = "pandas" },
 ]
 docs-live = [
     "sphinx-autobuild",
@@ -81,6 +84,10 @@ docs-live = [
 ]
 mypy = [ "mypy>=1.14.0" ]
 nbval = [ "nbval" ]
+pandas = [
+  "pandas",
+  "openpyxl",
+]
 test-extras = [
     "pytest",
     "pytest-cov",

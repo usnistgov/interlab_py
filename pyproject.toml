@@ -38,6 +38,9 @@ dynamic = [
     "version",
 ]
 dependencies = [
+    "numpy",
+    "scikit-learn",
+    "scipy",
 ]
 urls.Documentation = "https://pages.nist.gov/interlab_py/"
 urls.Homepage = "https://github.com/wpk-nist-gov/interlab_py"
@@ -46,7 +49,7 @@ urls.Homepage = "https://github.com/wpk-nist-gov/interlab_py"
 dev = [
     { include-group = "dev-extras" },
     { include-group = "mypy" },
-    # { include-group = "nbval" },
+    { include-group = "nbval" },
     { include-group = "test" },
     { include-group = "typing" },
     { include-group = "uvxrun" },
@@ -253,40 +256,15 @@ pytest-accept = { pip = true }
 
 [tool.pyproject2conda.envs.dev]
 groups = "dev"
-style = [ "requirements", "yaml" ]
 
 [tool.pyproject2conda.envs.test]
 groups = "test"
 python = "all"
-style = [ "requirements", "yaml" ]
 
 [tool.pyproject2conda.envs.test-extras]
 groups = "test-extras"
 python = "all"
 skip_package = true
-style = [ "requirements", "yaml" ]
-
-[tool.pyproject2conda.envs.test-notebook]
-groups = "test-notebook"
-style = "requirements"
-
-[tool.pyproject2conda.envs.docs]
-groups = "docs"
-style = "requirements"
-
-[tool.pyproject2conda.envs.docs-live]
-groups = "docs-live"
-style = "requirements"
-
-[tool.pyproject2conda.envs.typing]
-groups = "typing"
-python = "all"
-style = "requirements"
-
-[tool.pyproject2conda.envs.build]
-groups = "build-system.requires"
-skip_package = true
-style = "requirements"
 
 [tool.pyproject2conda.envs.uvxrun-tools]
 reqs = [

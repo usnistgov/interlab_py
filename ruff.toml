@@ -98,4 +98,5 @@ fix = true
     # "PLR0913", # - complexity sometimes ok
     # "PLR0917", # - complexity sometimes ok
     "F841",
+    "E722",
 ]

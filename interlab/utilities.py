@@ -4,7 +4,6 @@ import math
 import numpy as np
 
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gs
 
 from sklearn import decomposition as skdecomp
 

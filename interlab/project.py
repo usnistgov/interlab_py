@@ -1,11 +1,10 @@
-from utilities import ExperimentGroup,InterlabArray,g_formatter,idfunc
+from utilities import ExperimentGroup,InterlabArray,idfunc
 
 import math
 import numpy as np
 import scipy as sp
 import scipy.spatial 
 import scipy.stats
-import matplotlib
 import matplotlib.pyplot as plt
 
 from sklearn import preprocessing as skpp

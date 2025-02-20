@@ -84,7 +84,7 @@ repos:
     hooks:
       - id: codespell
         additional_dependencies: [tomli]
-        args: [-I, docs/spelling_wordlist.txt]
+        args: [-I, source/spelling_wordlist.txt]
         exclude_types: [jupyter]
         exclude: ^uv[.]lock$|^requirements
 
@@ -97,7 +97,7 @@ repos:
         name: nbqa-codespell
         additional_dependencies: &codespell-deps [codespell==2.4.1, tomli] # make sure same as above
         args:
-          [codespell, --ignore-words=docs/spelling_wordlist.txt, --nbqa-shell]
+          [codespell, --ignore-words=source/spelling_wordlist.txt, --nbqa-shell]
       - id: nbqa
         alias: nbqa-codespell
         name: nbqa-codespell-markdown
@@ -105,7 +105,7 @@ repos:
         args:
           [
             codespell,
-            --ignore-words=docs/spelling_wordlist.txt,
+            --ignore-words=source/spelling_wordlist.txt,
             --nbqa-shell,
             --nbqa-md,
           ]

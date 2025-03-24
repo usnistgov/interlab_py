@@ -7,7 +7,7 @@ Changelog for `interlab_py`
 
 ## Unreleased
 
-[changelog.d]: https://github.com/wpk-nist-gov/interlab_py/tree/main/changelog.d
+[changelog.d]: https://github.com/usnistgov/interlab_py/tree/main/changelog.d
 
 See the fragment files in [changelog.d]
 <!-- prettier-ignore-end -->

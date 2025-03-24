@@ -13,18 +13,21 @@ dependencies:
   - python=3.12
   - ipykernel
   - ipython
+  - matplotlib
   - mypy>=1.14.0
   - nbclient>=0.10.0
   - nbval
   - nox>=2024.4.15
   - numpy
+  - openpyxl
   - packaging
+  - pandas
   - pylint
   - pytest
   - pytest-cov
   - pytest-sugar
   - pytest-xdist
-  - scikit-learn
+  - scikit-learn>=0.20
   - scipy
   - pip
   - pip:

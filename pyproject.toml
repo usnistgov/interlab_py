@@ -7,7 +7,7 @@ requires = [
 ]
 
 [project]
-name = "interlab"
+name = "interlab-py"
 description = "All the boilerplate you need to create a Python package."
 keywords = [
     "interlab",
@@ -15,6 +15,7 @@ keywords = [
 license = "NIST-PD"
 license-files = [ "LICENSE" ]
 authors = [
+    { name = "David A. Sheen", email = "david.sheen@nist.gov" },
     { name = "William P. Krekelberg", email = "wpk@nist.gov" },
 ]
 requires-python = ">=3.8"
@@ -38,13 +39,13 @@ dynamic = [
     "version",
 ]
 dependencies = [
-    "numpy",
-    "scikit-learn",
-    "scipy",
     "matplotlib",
+    "numpy",
+    "scikit-learn>=0.20",
+    "scipy",
 ]
 urls.Documentation = "https://pages.nist.gov/interlab_py/"
-urls.Homepage = "https://github.com/wpk-nist-gov/interlab_py"
+urls.Homepage = "https://github.com/usnistgov/interlab_py"
 
 [dependency-groups]
 dev = [
@@ -85,8 +86,8 @@ docs-live = [
 mypy = [ "mypy>=1.14.0" ]
 nbval = [ "nbval" ]
 pandas = [
-  "pandas",
-  "openpyxl",
+    "openpyxl",
+    "pandas",
 ]
 test-extras = [
     "pytest",
@@ -114,6 +115,11 @@ raw-options = { local_scheme = "no-local-version" }
 [tool.hatch.build]
 exclude = [
     ".*_cache",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = [
+    "src/interlab",
 ]
 
 [tool.hatch.metadata.hooks.fancy-pypi-readme]

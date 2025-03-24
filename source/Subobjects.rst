@@ -7,7 +7,7 @@ This page presents documentation for the subobjects that are contained within a 
 
 Class documentation
 -------------------
-   
+
 .. autoclass:: ExperimentGroup
 .. autoclass:: InterlabArray
 .. autoclass:: DistanceMetric
@@ -25,7 +25,7 @@ Method summary
    ExperimentGroup.plot_data
    ExperimentGroup.plot_zscores
    ExperimentGroup.distance_measure_plot
-   
+
 .. autosummary::
    InterlabArray
    InterlabArray.fit_transform
@@ -41,12 +41,10 @@ Method summary
    DistanceMetric.fit_zscores
    DistanceMetric.find_outliers
    DistanceMetric.plot_zscores
-   
+
 .. autosummary::
    Population
    Population.fit_zscores
    Population.find_outliers
    Population.histogram
    Population.plot_zscores
-   
-   

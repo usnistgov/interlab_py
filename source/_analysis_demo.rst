@@ -5,7 +5,7 @@ Example interlaboratory study
 Imports
 =======
 
-Import the mumpce interface and the interface to Cantera. 
+Import the mumpce interface and the interface to Cantera.
 
 .. code:: ipython3
 
@@ -57,12 +57,12 @@ The sheets are arranged such that each row corresponds to an NMR bin and each co
 .. code:: ipython3
 
     Labels_dict = {}
-    
+
     for key,df in df_dict.items():
         peakPPM_full = df.index.values[range_to_use]
         Labels = df.columns.values
         Labels_dict[key] = df.columns.values
-        
+
     print(Labels)
     print(peakPPM_full)
 
@@ -96,14 +96,14 @@ Now that the metadata have all been read, we will actually read the data and cre
 
     rawdata_dict = {}
     data_dict = {}
-    
+
     for key,df in df_dict.items():
         raw_values = df.values[range_to_use].T
         rawdata_dict[key] = raw_values
-    
+
         normalized_values = inl.fix_spectrum(raw_values)
         data_dict[key] = (normalized_values.T/normalized_values.sum(axis=1)).T
-        
+
 
 Creating the Project
 --------------------
@@ -121,7 +121,7 @@ Now we have enough data to create the Project object. When created, the Project 
 Using Projects to run interlaboratory analysis
 ==============================================
 
-Now that we've created the project, we can begin to run the interlab analysis. 
+Now that we've created the project, we can begin to run the interlab analysis.
 
 Interspectral distance matrices
 -------------------------------
@@ -165,7 +165,7 @@ Fit the scores to the distances, and then find the outliers.
 .. code:: ipython3
 
     synthetic_samples_project.fit_zscores()
-    synthetic_samples_project.find_outliers()  
+    synthetic_samples_project.find_outliers()
 
 
 We can also plot histograms and bar charts of the average interspectral distances. These distributions are where the Z-scores come from.
@@ -288,9 +288,9 @@ You can access multiple :py:class:`ExperimentGroup` objects by passing a list of
 .. code:: ipython3
 
     group_list = synthetic_samples_project[['S2','S6']]
-    
+
     fig,axes = plt.subplots(2,1)
-    
+
     for group,ax in zip(group_list,axes):
         nmrdata= group.data.T
         nmrdata = nmrdata/nmrdata.max(axis=0)
@@ -337,9 +337,9 @@ Multiple :py:class:`DistanceMetric` s can be accessed by passing a list.
 .. code:: ipython3
 
     metric_list = synthetic_samples_project['S6',[jeffries,hellinger]]
-    
+
     fig,axes = plt.subplots(1,2,figsize=(11,4))
-    
+
     for metric,ax in zip(metric_list,axes):
         d = metric.distance_matrix
         im = ax.imshow(d,origin='lower',cmap='BuPu')
@@ -352,4 +352,3 @@ Multiple :py:class:`DistanceMetric` s can be accessed by passing a list.
 
 
 .. image:: analysis_demo_files/analysis_demo_42_0.png
-

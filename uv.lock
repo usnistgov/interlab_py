@@ -1208,7 +1208,7 @@ wheels = [
 ]
 
 [[package]]
-name = "interlab"
+name = "interlab-py"
 source = { editable = "." }
 dependencies = [
     { name = "matplotlib", version = "3.7.5", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
@@ -1348,7 +1348,7 @@ uvxrun = [
 requires-dist = [
     { name = "matplotlib" },
     { name = "numpy" },
-    { name = "scikit-learn" },
+    { name = "scikit-learn", specifier = ">=0.20" },
     { name = "scipy" },
 ]
 

@@ -11,11 +11,14 @@ channels:
   - conda-forge
 dependencies:
   - python=3.11
+  - matplotlib
   - numpy
+  - openpyxl
+  - pandas
   - pytest
   - pytest-cov
   - pytest-sugar
   - pytest-xdist
-  - scikit-learn
+  - scikit-learn>=0.20
   - scipy
   - pip

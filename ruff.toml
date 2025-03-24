@@ -11,7 +11,7 @@ extend-exclude = [
     # "src/testpackage_book_nocli/tests",
 ]
 fix = true
-# unsafe-fixes = true
+unsafe-fixes = true
 
 # [format]
 # docstring-code-format = true
@@ -74,6 +74,7 @@ fix = true
 
 # Project specific ignores (avoid changing per-file-ignores directly)
 # extend-per-file-ignores."path/to/file.py" = [ ... ]
+
 [lint.extend-per-file-ignores]
 "**/*.ipynb" = [
     # "B018",  # - Don't remove useless expressions in notebooks

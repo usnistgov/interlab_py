@@ -1,0 +1,26 @@
+{
+  "template": "https://github.com/usnistgov/cookiecutter-nist-python.git",
+  "commit": "57d5fcfa3f862b28f5691d6f9a10b5b4e04dcd1a",
+  "checkout": "develop",
+  "context": {
+    "cookiecutter": {
+      "project_name": "interlab_py",
+      "project_slug": "interlab_py",
+      "project_short_description": "All the boilerplate you need to create a Python package.",
+      "full_name": "William P. Krekelberg",
+      "email": "wpk@nist.gov",
+      "github_username": "wpk-nist-gov",
+      "pypi_username": "wpk-nist",
+      "conda_channel": "wpk-nist",
+      "command_line_interface": "none",
+      "sphinx_use_autodocsumm": true,
+      "sphinx_theme": "sphinx_book_theme",
+      "year": "2025",
+      "__answers": "",
+      "_copy_without_render": [],
+      "_template": "https://github.com/usnistgov/cookiecutter-nist-python.git",
+      "_commit": "57d5fcfa3f862b28f5691d6f9a10b5b4e04dcd1a"
+    }
+  },
+  "directory": null
+}

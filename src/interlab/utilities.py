@@ -67,18 +67,26 @@ def calculate_minmax(data):
 
 
 class ExperimentGroup(object):
-    """Container for spectral data and methods for analysis
+    """
+    Container for spectral data and methods for analysis
 
-    This object contains a group of spectral measurements that are related, usually by being of the same physical object and having the same structure.
+    This object contains a group of spectral measurements that are related,
+    usually by being of the same physical object and having the same structure.
 
-    :key name: The name of the group of measurements.
-    :key data: Array of data to be used for the interlab analysis
-    :key rawdata: Array of unprocessed data, if different from data
-
-    :key data_names: List of data sets (labs) with data for each sample
-
-    :key distance_metrics: List of distance metrics. Each metric in this list will be used to create a :py:class:`DistanceMetric` object.
-    :key distribution_function: Which distribution will be assumed when assigning Z scores to each measurement of a sample.
+    Parameters
+    ----------
+    name : str, optional
+        The name of the group of measurements.
+    data : array-like
+        Array of data to be used for the interlab analysis
+    rawdata : array-like
+        Array of unprocessed data, if different from data
+    data_names : list
+        List of data sets (labs) with data for each sample
+    distance_metrics : list
+        List of distance metrics. Each metric in this list will be used to create a :py:class:`DistanceMetric` object.
+    distribution :
+        Which distribution will be assumed when assigning Z scores to each measurement of a sample.
     """
 
     def __init__(
@@ -236,12 +244,18 @@ class ExperimentGroup(object):
 
 
 class DistanceMetric(object):
-    """A distance metric and the interspectral distances associated with it
+    """
+    A distance metric and the interspectral distances associated with it
 
-    :param metric: The name of the metric function
-    :param function: The metric function. Can be a binary function f(x,y) or a string identifying a metric recognized by :py:func:`scipy.spatial.distance.pdist`
-    :key distribution_function: Which distribution will be assumed when assigning Z scores to each measurement of a sample.
-    :key mahalanobis_dict:
+    Parameters
+    ----------
+    metric : str
+        The name of the metric function
+    function : callable
+        The metric function. Can be a binary function f(x,y) or a string identifying a metric recognized by :py:func:`scipy.spatial.distance.pdist`
+    distribution :
+        Which distribution will be assumed when assigning Z scores to each measurement of a sample.
+    mahalanobis_dict : dict
     """
 
     def __init__(self, metric, function, distribution=None, mahalanobis_dict=None):
@@ -272,7 +286,10 @@ class DistanceMetric(object):
     def distance(self, data):
         """Calculates the pairwise interspectral distances and the average interspectral distance, then loads the average distances into the :py:class:`Population`.
 
-        :param data: The data for which distances will be calculated
+        Parameters
+        ----------
+        data :
+            The data for which distances will be calculated
         """
         VI = None
         # significant_components=data.shape[0]
@@ -313,15 +330,21 @@ class DistanceMetric(object):
         show_titles=False,
         **kwargs,
     ):
-        """Plots a heatmap of the pairwise interspectral distance.
+        """
+        Plots a heatmap of the pairwise interspectral distance.
 
-        :param ax: The axis to make the plot
-        :key vmin: Passed to imshow
-        :key vmax: Passed to imshow
-        :key cmap: Passed to imshow
-        :key origin: Passed to imshow
-        :key aspect: Passed to imshow
-        :key show_titles:
+        Parameters
+        ----------
+        ax : Axis
+            The axis to make the plot
+        vmin, vmax, cmap, origin, aspect :
+            Passed to :func:`~matplotlib.pyplot.imshow`
+        show_titles : bool
+            If `True`, include title.
+
+        Returns
+        -------
+        :class:`~matplotlib.image.AxesImage`
         """
         if vmin is None:
             vmin, vmax = self.minmax()
@@ -369,11 +392,17 @@ class DistanceMetric(object):
 
 
 class Population(object):
-    """Object containing some values, a distribution function fit to those values, and corresponding scores
+    """
+    Object containing some values, a distribution function fit to those values, and corresponding scores
 
-    :param name: The name assigned to this Population
-    :key distribution: Which distribution will be assumed when assigning Z scores to laboratories.
-    :key values: The values to which the distribution will be fit
+    Parameters
+    ----------
+    name : str
+        The name assigned to this Population
+    distribution :
+        Which distribution will be assumed when assigning Z scores to laboratories.
+    values :
+        The values to which the distribution will be fit
     """
 
     def __init__(self, name, distribution=None, values=None):
@@ -386,10 +415,15 @@ class Population(object):
         return
 
     def fit_zscores(self, data=None, mask=None):
-        """Fit the distribution to the data using a provided mask and calculate the scores of the data
+        """
+        Fit the distribution to the data using a provided mask and calculate the scores of the data
 
-        :key data: The data that will be fit to the distribution. Normally, this is the values of the Population
-        :key mask: If present, masks some elements of data
+        Parameters
+        ----------
+        data :
+            The data that will be fit to the distribution. Normally, this is the values of the Population
+        mask :
+            If present, masks some elements of data
         """
 
         if data is None:
@@ -416,10 +450,16 @@ class Population(object):
         return
 
     def find_outliers(self, recursive=False, support_fraction=0.6, final_screen=False):
-        """Finds the outliers of the distribution
+        """
+        Finds the outliers of the distribution
 
-        :key recursive: If true, finds outliers and refit until all outliers have been removed
-        :key support_fraction: Fraction of values that are guaranteed to be retained
+        Parameters
+        ----------
+        recursive : bool
+            If true, finds outliers and refit until all outliers have been removed
+        support_fraction : float
+            Fraction of values that are guaranteed to be retained
+        final_screen : bool
         """
 
         max_percentile = 0.9495  # 95% confidence limint, respecting support fraction (respecting 3 sig figs rounding)
@@ -534,11 +574,18 @@ class Population(object):
 class InterlabArray(object):
     """Object for executing interlaboratory comparison
 
-    :key name: Name for the interlab object
-    :key data_array: Z-score array for the measurements in this interlaboratory study
-    :key lablist: List of laboratories that have data in this interlab
-    :key datasets: List of datasets that are in this interlab
-    :key distribution_function: Which distribution will be assumed when assigning Z scores to laboratories. The default is sp.stats.lognorm
+    Parameters
+    ----------
+    name : str
+        Name for the interlab object
+    data_array :
+        Z-score array for the measurements in this interlaboratory study
+    lablist : list
+        List of laboratories that have data in this interlab
+    datasets : list
+        List of datasets that are in this interlab
+    distribution_function :
+        Which distribution will be assumed when assigning Z scores to laboratories. The default is sp.stats.lognorm
     """
 
     def __init__(
@@ -631,10 +678,13 @@ class InterlabArray(object):
         return
 
     def plot_components(self, ax):
-        """Plots the principal component loadings for the statistical distances
+        """
+        Plots the principal component loadings for the statistical distances
 
-        :param ax: A list of the distance metrics for which loadings will be plotted. If None, plot loadings for all metrics in this project
-        :key xlabel_buffer: Space allocated for x-axis labels (in inches)
+        Parameters
+        ----------
+        ax : Axis
+            Axis to plot to.
         """
         PCAssign = np.sign(self.pca.components_[0, :].mean())
 
@@ -729,10 +779,15 @@ class InterlabArray(object):
         return
 
     def plot_outliers(self, ax, y_component=1):
-        """Plots the principal component scores for each lab along with the final distribution used to calculate the outliers
+        """
+        Plots the principal component scores for each lab along with the final distribution used to calculate the outliers
 
-        :param ax: The axis on which the plot will be made
-        :key y_component: Which principal component to use on the Y axis, if not the first
+        Parameters
+        ----------
+        ax : Axis
+            The axis on which the plot will be made
+        y_component : int
+            Which principal component to use on the Y axis, if not the first
         """
         zscores_projected = self.pca_scores
         z_mask = self.outlier_mask

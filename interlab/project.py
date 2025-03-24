@@ -9,6 +9,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 from sklearn import preprocessing as skpp
+from sklearn import impute as skimp
 
 import plot_utils as plu
 
@@ -410,7 +411,7 @@ class Project(object):
         no_exp_for_lab = np.all(np.isnan(zscores_array),axis=0)
         
         #Impute the missing Z scores by replacing all nan values with the median
-        imp =  skpp.Imputer(strategy='median',axis=imputation_axis) 
+        imp =  skimp.SimpleImputer(strategy='median')#,axis=imputation_axis) 
         zscores_imputed = imp.fit_transform(zscores_array.T[~no_exp_for_lab]).T
         
         #Load the imputed score array into the interlab array object

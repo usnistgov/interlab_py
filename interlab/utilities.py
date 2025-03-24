@@ -234,7 +234,8 @@ class DistanceMetric(object):
         
         :param data: The data for which distances will be calculated
         """
-        VI=None
+        #VI=None It used to work that passing VI=None for distance metrics that didn't require a 
+        kwargs = {}
         #significant_components=data.shape[0]
 
         #Empty containers
@@ -244,10 +245,12 @@ class DistanceMetric(object):
         if self.function == 'mahalanobis':
             if not(self.mahalanobis_dict):
                 raise ValueError('Must define the inverse covariance matrix if metric is mahalanobis')
-            VI=self.mahalanobis_dict['VI']
+            #VI=self.mahalanobis_dict['VI']
+            kwargs = self.mahalanobis_dict
             #significant_components=mahalanobis_dict['significant_components']
         
-        distance_condensed = sp.spatial.distance.pdist(data,self.function,VI=VI)
+        #distance_condensed = sp.spatial.distance.pdist(data,self.function,VI=VI)
+        distance_condensed = sp.spatial.distance.pdist(data,self.function,**kwargs)
         self.distance_matrix = sp.spatial.distance.squareform(distance_condensed)
         
         

@@ -14,13 +14,12 @@ dependencies:
   - ipykernel
   - ipython
   - matplotlib
-  - mypy>=1.14.0
+  - mypy>=1.15.0
   - nbclient>=0.10.0
   - nbval
-  - nox>=2024.4.15
+  - nox>=2024.10.9
   - numpy
   - openpyxl
-  - packaging
   - pandas
   - pylint
   - pytest

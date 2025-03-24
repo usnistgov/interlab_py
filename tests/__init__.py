@@ -1,1 +1,1 @@
-"""Unit test package for interlab_py."""
+"""Unit test package for interlab."""

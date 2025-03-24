@@ -1,3 +1,10 @@
+"""
+Distance metrics (:mod:`~interlab.metrics`)
+===========================================
+
+Distance metrics not available in scipy.
+"""
+
 import numpy as np
 import scipy as sp
 import math
@@ -15,18 +22,18 @@ def hyperbolic_transform(distance):
 
 
 def hellinger(x, y):
-    """Computes the Hellinger distance between two sum-normalized vectors
+    r"""Computes the Hellinger distance between two sum-normalized vectors
 
-    :math:`d_h(x,y) = \\frac{1}{2} \sqrt{\sum_{i} \\left(\sqrt{x_i} - \sqrt{y_i}\\right)^2}`
+    :math:`d_h(x,y) = \frac{1}{2} \sqrt{\sum_{i} \left(\sqrt{x_i} - \sqrt{y_i}\right)^2}`
 
     Equivalently, for sum-normalized vectors
 
-    :math:`d_h(x,y) =  1 - \sum_{i} \\left(\sqrt{x_i} - \sqrt{y_i}\\right)`
+    :math:`d_h(x,y) =  1 - \sum_{i} \left(\sqrt{x_i} - \sqrt{y_i}\right)`
 
     :param x: The first vector
     :param y: The second vector
-    :type x: ndarray
-    :type y: ndarray
+    :type x: :class:`~numpy.ndarray`
+    :type y: :class:`~numpy.ndarray`
     :returns: ``hellinger(x,y) = np.sqrt( 1 - np.dot(np.sqrt(x),np.sqrt(y)) )``
     """
 
@@ -37,16 +44,16 @@ def hellinger(x, y):
 
 
 def hellinger_hyp(x, y):
-    """Computes the hyperbolic Hellinger distance metric between two vectors
+    r"""Computes the hyperbolic Hellinger distance metric between two vectors
 
     .. math::
 
-       d_{hy} = \log \\left(\\frac{1 + d_h}{1 - d_h}\\right)
+       d_{hy} = \log \left(\frac{1 + d_h}{1 - d_h}\right)
 
     :param x: The first vector
     :param y: The second vector
-    :type x: ndarray
-    :type y: ndarray
+    :type x: :class:`~numpy.ndarray`
+    :type y: :class:`~numpy.ndarray`
     :returns: ``hellinger_hyp(x,y) = math.log( (1+hellinger(x,y))/(1 - hellinger(x,y)) )``
     """
     hellinger_distance = hellinger(x, y)
@@ -58,17 +65,17 @@ def hellinger_hyp(x, y):
 
 
 def jeffries(x, y):
-    """Computes the Jeffries divergence between two vectors
+    r"""Computes the Jeffries divergence between two vectors
 
     .. math::
 
-       d_{SKL}(x,y) = \\frac{1}{2} \\left( \sum_{i} \\left( x_i - y_i \\right) \log \\frac{x_i}{y_i}  \\right)
+       d_{SKL}(x,y) = \frac{1}{2} \left( \sum_{i} \left( x_i - y_i \right) \log \frac{x_i}{y_i}  \right)
 
 
     :param x: The first vector
     :param y: The second vector
-    :type x: ndarray
-    :type y: ndarray
+    :type x: :class:`~numpy.ndarray`
+    :type y: :class:`~numpy.ndarray`
     :returns: ``jeffries(x,y) = (1/2) * ( entropy(x,y) + entropy(y,x) )``
 
     """
@@ -79,16 +86,16 @@ def jeffries(x, y):
 
 
 def jensen(x, y):
-    """Computes the Jensen-Shannon metric between two vectors
+    r"""Computes the Jensen-Shannon metric between two vectors
 
     .. math::
 
-       d^2_j = \sum_{i} \\left( x_i \log_2 \\frac{2x_i}{x_i + y_i} + y_i \log_2 \\frac{2y_i}{x_i + y_i} \\right)
+       d^2_j = \sum_{i} \left( x_i \log_2 \frac{2x_i}{x_i + y_i} + y_i \log_2 \frac{2y_i}{x_i + y_i} \right)
 
     :param x: The first vector
     :param y: The second vector
-    :type x: ndarray
-    :type y: ndarray
+    :type x: :class:`~numpy.ndarray`
+    :type y: :class:`~numpy.ndarray`
     :returns: ``jensen(x,y) = entropy(x,m) + entropy(y,m)`` where ``m = (1/2) * (x + y)``
 
     """
@@ -102,16 +109,16 @@ def jensen(x, y):
 
 
 def jensen_distance(x, y):
-    """Computes the Jensen-Shannon distance between two vectors
+    r"""Computes the Jensen-Shannon distance between two vectors
 
     .. math::
 
-       d_j = \sum_{i} \\left( x_i \log \\frac{2x_i}{x_i + y_i} + y_i \log \\frac{2y_i}{x_i + y_i} \\right)
+       d_j = \sum_{i} \left( x_i \log \frac{2x_i}{x_i + y_i} + y_i \log \frac{2y_i}{x_i + y_i} \right)
 
     :param x: The first vector
     :param y: The second vector
-    :type x: ndarray
-    :type y: ndarray
+    :type x: :class:`~numpy.ndarray`
+    :type y: :class:`~numpy.ndarray`
     :returns: ``jensen_distance(x,y) = sqrt(entropy(x,m) + entropy(y,m))``
 
     where ``m = (1/2) * (x + y)``
@@ -123,16 +130,16 @@ def jensen_distance(x, y):
 
 
 def jensen_hyp(x, y):
-    """Computes the hyperbolic Jensen-Shannon metric between two vectors
+    r"""Computes the hyperbolic Jensen-Shannon metric between two vectors
 
     .. math::
 
-       d_{hy} = \log \\left(\\frac{1 + d_j}{1 - d_j}\\right)
+       d_{hy} = \log \left(\frac{1 + d_j}{1 - d_j}\right)
 
     :param x: The first vector
     :param y: The second vector
-    :type x: ndarray
-    :type y: ndarray
+    :type x: :class:`~numpy.ndarray`
+    :type y: :class:`~numpy.ndarray`
     :returns: ``jensen_hyp(x,y) = math.log( (1+jensen_distance(x,y))/(1 - jensen_distance(x,y)) )``
     """
     jensen_entropy = jensen(x, y)

@@ -1,3 +1,19 @@
+"""
+Utilities for the :class:`.Project` class (:mod:`~interlab.utilities`)
+======================================================================
+
+All of the methods of the classes here can be accessed from the
+:py:class:`.Project` object. The :py:class:`.Project` object will contain
+:py:class:`.ExperimentGroup` and :py:class:`.InterlabArray` objects.
+:py:class:`.ExperimentGroup` objects will, in turn, contain
+:py:class:`.DistanceMetric` objects, and both :py:class:`.InterlabArray` and
+:py:class:`.DistanceMetric` objects will contain :py:class:`.Population`
+objects. Container objects usually contain an interface to the equivalent
+method in the contained object.
+
+
+"""
+
 import scipy as sp
 import scipy.stats
 import math
@@ -567,7 +583,7 @@ class InterlabArray(object):
         return self.population.outlier_mask
 
     def fit_transform(self):
-        """Fits the sklearn.pca object and then removes the mean-centering. Calculates projected statistical distance and stores that in :py:class:`Population`"""
+        """Fits the :class:`sklearn.decomposition.PCA` object and then removes the mean-centering. Calculates projected statistical distance and stores that in :py:class:`.Population`"""
         # Fit PCA
         self.pca.fit(self.data_array.T)
 
@@ -604,13 +620,13 @@ class InterlabArray(object):
     # def plot_zscore_heatmap(self):
 
     def fit_zscores(self, **kwargs):
-        """Pass-through for :py:class:`.Population.fit_zscores`"""
+        """Pass-through for :py:meth:`.Population.fit_zscores`"""
         # Fit the projected statistical distance
         self.population.fit_zscores(**kwargs)
         return
 
     def find_outliers(self, **kwargs):
-        """Pass-through for :py:class:`.Population.find_outliers`"""
+        """Pass-through for :py:meth:`.Population.find_outliers`"""
         self.population.find_outliers(**kwargs)
         return
 

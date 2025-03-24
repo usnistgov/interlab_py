@@ -55,8 +55,7 @@ if sys.version_info < (3, 10):
 # * Names ------------------------------------------------------------------------------
 
 PACKAGE_NAME = "interlab_py"
-IMPORT_NAME = "interlab_py"
-KERNEL_BASE = "interlab_py"
+IMPORT_NAME = "interlab"
 
 # * nox options ------------------------------------------------------------------------
 

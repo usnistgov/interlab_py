@@ -1,10 +1,18 @@
 # API Reference
 
+```{toctree}
+:maxdepth: 2
+:hidden:
+
+api-modules
+```
+
 ```{eval-rst}
-.. currentmodule:: interlab_py
 
 .. autosummary::
-   :toctree: generated/
 
-   example_function
+    interlab
+    interlab.metrics
+    interlab.utilities
+    interlab.plot_utils
 ```

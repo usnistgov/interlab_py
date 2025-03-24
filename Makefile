@@ -120,7 +120,7 @@ version-scm: ## check/update version of package from scm
 	$(NOX) -s build -- ++build version
 
 version-import: ## check version from python import
-	-$(UVRUN) python -c 'import interlab_py; print(interlab_py.__version__)'
+	-$(UVRUN) python -c 'import interlab; print(interlab.__version__)'
 
 version: version-scm version-import
 
@@ -276,6 +276,6 @@ commitizen-changelog:
 # tuna analyze load time:
 .PHONY: tuna-analyze
 tuna-import	: ## Analyze load time for module
-	$(UVRUN) python -X importtime -c 'import interlab_py' 2> tuna-loadtime.log
+	$(UVRUN) python -X importtime -c 'import interlab' 2> tuna-loadtime.log
 	$(UVX) $(UVX_OPTS) tuna tuna-loadtime.log
 	rm tuna-loadtime.log

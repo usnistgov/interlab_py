@@ -27,7 +27,7 @@ from typing import Any
 
 sys.path.insert(0, str(Path("../src").resolve()))
 
-import interlab_py
+import interlab
 
 # -- General configuration ---------------------------------------------
 
@@ -117,8 +117,9 @@ myst_substitutions = {
 
 myst_url_schemes = ("http", "https", "mailto")
 
-nb_execution_mode = "cache"
+# nb_execution_mode = "cache"
 # nb_execution_mode = "auto"
+nb_execution_mode = "off"
 
 # set the kernel name
 nb_kernel_rgx_aliases = {
@@ -252,7 +253,7 @@ author = "William P. Krekelberg"
 # The short X.Y version.
 def _get_version() -> str:
     if (version := os.environ.get("SETUPTOOLS_SCM_PRETEND_VERSION")) is None:
-        version = interlab_py.__version__
+        version = interlab.__version__
     return version
 
 
@@ -422,14 +423,15 @@ texinfo_documents = [
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3/", None),
     # "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
-    # "numpy": ("https://numpy.org/doc/stable", None),
-    # "scipy": ("https://docs.scipy.org/doc/scipy/", None),
+    "numpy": ("https://numpy.org/doc/stable", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
     # "numba": ("https://numba.readthedocs.io/en/stable/", None),
-    # "matplotlib": ("https://matplotlib.org/stable/", None),
+    "matplotlib": ("https://matplotlib.org/stable/", None),
     # "dask": ("https://docs.dask.org/en/latest", None),
     # "cftime": ("https://unidata.github.io/cftime", None),
     # "sparse": ("https://sparse.pydata.org/en/latest/", None),
     # "xarray": ("https://docs.xarray.dev/en/stable/", None),
+    "sklearn": ("https://scikit-learn.org/stable", None),
 }
 
 linkcheck_ignore = ["https://doi.org/"]
@@ -475,10 +477,10 @@ def linkcode_resolve(domain: str, info: dict[str, Any]) -> str | None:
     linespec = f"#L{lineno}-L{lineno + len(source) - 1}" if lineno else ""
 
     # fmt: off
-    fn = os.path.relpath(fn, start=Path(interlab_py.__file__).parent)
+    fn = os.path.relpath(fn, start=Path(interlab.__file__).parent)
     # fmt: on
 
-    return f"https://github.com/{github_username}/interlab_py/blob/{html_context['github_version']}/src/interlab_py/{fn}{linespec}"
+    return f"https://github.com/{github_username}/interlab_py/blob/{html_context['github_version']}/src/interlab/{fn}{linespec}"
 
 
 # only set spelling stuff if installed:

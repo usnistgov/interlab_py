@@ -11,7 +11,7 @@ repos:
     rev: v5.0.0
     hooks:
       - id: check-added-large-files
-        exclude: ^uv[.]lock
+        exclude: ^uv[.]lock|syn_data.xlsx$|analysis_demo.ipynb$
       - id: check-case-conflict
       - id: check-merge-conflict
       - id: check-symlinks

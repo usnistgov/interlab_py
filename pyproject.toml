@@ -125,7 +125,7 @@ fragments = [
 ]
 
 [tool.check-wheel-contents]
-toplevel = [ "interlab_py" ]
+toplevel = [ "interlaby" ]
 src_dir = [ "src" ]
 
 [tool.pyproject-fmt]
@@ -142,7 +142,7 @@ addopts = [
 ]
 testpaths = [
     "README.md",
-    "interlab_py",
+    "interlab",
     "tests",
 ]
 

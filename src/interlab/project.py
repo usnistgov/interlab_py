@@ -1,3 +1,8 @@
+"""
+Project level functionality (:mod:`interlab.project`)
+=====================================================
+"""
+
 from .utilities import ExperimentGroup, InterlabArray, idfunc
 
 import math
@@ -26,12 +31,12 @@ except ImportError:
 class Project(object):
     """The top-level project class for the interlaboratory comparison module
 
-    :key Sample_names: List of sample names, used as keys for the dictionaries of data set names and processed and raw data. Each key in this list will correspond to a :py:class:`ExperimentGroup` object
+    :key Sample_names: List of sample names, used as keys for the dictionaries of data set names and processed and raw data. Each key in this list will correspond to a :py:class:`.ExperimentGroup` object
     :key Data_set_names: Dictionary of data sets (labs) with data for each sample
     :key data: Dictionary of data to be used for the interlab analysis
     :key rawdata: Dictionary of unprocessed data, if different from data
 
-    :key distance_metrics: List of distance metrics. Each metric in this list will be used to create a :py:class:`DistanceMetric` object within each :py:class:`ExperimentGroup` object
+    :key distance_metrics: List of distance metrics. Each metric in this list will be used to create a :py:class:`.DistanceMetric` object within each :py:class:`.ExperimentGroup` object
 
     :key x_data_list: The list of x data in the data array. For 2D data, this is not used
     :key range_to_use: Used to screen certain parts of the spectral data from consideration in the experimental comparison
@@ -114,6 +119,7 @@ class Project(object):
 
     @property
     def names(self):
+        """Mapping from experiment name to experiment"""
         names = {}
         for item in self.experiment_groups:
             names[item.name] = item
@@ -217,7 +223,8 @@ class Project(object):
             self.interlab_arrays[metric_name].find_outliers(**kwargs)
 
     def extract_matrices(self, **kwargs):
-        """Runs :py:func:`.extract_experimental_matrix` for each experimental matrix"""
+        """Runs :py:meth:`.extract_experimental_matrix` for each experimental
+        matrix"""
         for metric in tqfunc(self.distance_metrics, desc="Extract matrices"):
             metric_name = metric["metric"]
             self.extract_experimental_matrix(metric=metric_name, **kwargs)

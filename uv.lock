@@ -981,6 +981,8 @@ test-extras = [
 ]
 test-notebook = [
     { name = "nbval" },
+    { name = "openpyxl" },
+    { name = "pandas" },
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "pytest-sugar" },
@@ -1067,6 +1069,8 @@ test-extras = [
 ]
 test-notebook = [
     { name = "nbval" },
+    { name = "openpyxl" },
+    { name = "pandas" },
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "pytest-sugar" },

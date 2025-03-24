@@ -95,6 +95,7 @@ test-extras = [
 ]
 test-notebook = [
     { include-group = "nbval" },
+    { include-group = "pandas" },
     { include-group = "test-extras" },
 ]
 typing = [

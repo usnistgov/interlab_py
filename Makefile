@@ -234,7 +234,7 @@ list-dist: list-wheel list-sdist ## Cat out sdist and wheel contents
 
 
 # * NOTEBOOK -------------------------------------------------------------------
-NOTEBOOKS ?= examples/usage
+NOTEBOOKS ?= examples/usage/analysis_demo.ipynb
 # NOTE: use this because nested call back in nox has errors with uv run...
 _PYTHON = $(shell which python)
 _NBQA_TYPECHECK = $(_PYTHON) tools/typecheck.py -v

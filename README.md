@@ -47,18 +47,26 @@ and LC-MS.
 `interlab` allows researchers to identify laboratories producing data closest to
 the consensus values, thereby ensuring that untargeted studies are using the
 most precise data available to them. The software was originally developed for
-analyzing NMR data [1, 2] but can be applied to any array data, including Raman
-or FTIR spectroscopy and GC-MS or LC-MS. Details on the implementation of the
-code can be found in Ref. [1]. The input for the code consists of a set of
-sample labels identifying the physical objects measured in the interlaboratory
-study, facility labels that identify the facility of origin of the measurements,
-and the data themselves. It is the responsibility of the user to format the data
-and metadata so that the code can read it. In addition, the user must specify
-the distance function that will be used to compare the spectra and the
-statistical distribution that these distances will be fit to. One example is
-given in the
-[example notebook](https://pages.nist.gov/interlab_py/analysis_demo.html). Given
-the input data, the code will perform the following tasks:
+analyzing NMR data but can be applied to any array data, including Raman or FTIR
+spectroscopy and GC-MS or LC-MS.
+
+The input for the code consists of a set of sample labels identifying the
+physical objects measured in the interlaboratory study, facility labels that
+identify the facility of origin of the measurements, and the data themselves. It
+is the responsibility of the user to format the data and metadata so that the
+code can read it. In addition, the user must specify the distance function that
+will be used to compare the spectra and the statistical distribution that these
+distances will be fit to. Two examples are provided:
+
+- An [example notebook](https://pages.nist.gov/interlab_py/analysis_demo.html)
+  based on
+  [our first publication](https://doi.org/10.1016/j.chemolab.2016.12.010).
+- Our
+  [consistency analysis study](https://pages.nist.gov/interlab_py/nist_mab.html)
+  of the NISTmAb Interlaboratory Study, originally published
+  [here](https://doi.org/10.1016/j.chemolab.2020.103973)
+
+Given the input data, the code will perform the following tasks:
 
 - Calculates the interspectral distances
 - Fits the project’s distribution function to the distance data and calculate
@@ -70,7 +78,9 @@ the input data, the code will perform the following tasks:
 
 The software cannot be used out of the box. Users must create an interface to
 their own software, and that interface will be specific to the user’s
-application. The example notebook, demonstrates one such possible interface.
+application. The
+[example notebook](https://pages.nist.gov/interlab_py/analysis_demo.html)
+demonstrates one such possible interface.
 
 <!-- Quick overview... -->
 
@@ -83,9 +93,10 @@ application. The example notebook, demonstrates one such possible interface.
 ## Links
 
 <!-- prettier-ignore-start -->
-[NIST GitHub Organization](https://github.com/usnistgov)
 [NIST MetQual program](https://www.nist.gov/programs-projects/metabolomics-quality-assurance-and-quality-control-materials-metqual-program)
+
 [NIST Chemical Informatics Research Group](https://www.nist.gov/mml/csd/chemical-informatics-research-group)
+
 <!-- prettier-ignore-end -->
 
 <!-- ## Example usage -->

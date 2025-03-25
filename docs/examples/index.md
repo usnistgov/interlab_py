@@ -11,4 +11,5 @@ $ nox -s docs -- -d symlink
 :maxdepth: 2
 
 usage/analysis_demo
+nist_mab
 ```

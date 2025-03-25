@@ -291,7 +291,6 @@ class DistanceMetric(object):
         data :
             The data for which distances will be calculated
         """
-        VI = None
         # significant_components=data.shape[0]
 
         # Empty containers
@@ -303,10 +302,10 @@ class DistanceMetric(object):
                 raise ValueError(
                     "Must define the inverse covariance matrix if metric is mahalanobis"
                 )
-            VI = self.mahalanobis_dict["VI"]
+            kws = self.mahalanobis_dict
             # significant_components=mahalanobis_dict['significant_components']
-
-        kws = {"VI": VI} if VI is not None else {}
+        else:
+            kws = {}
 
         distance_condensed = sp.spatial.distance.pdist(data, self.function, **kws)
         self.distance_matrix = sp.spatial.distance.squareform(distance_condensed)
@@ -440,6 +439,8 @@ class Population(object):
         self.zscores = std.ppf(CDF)
 
         # Explicitly calculate Z if the distribution is lognorm, because this will give more reliable results for large Z
+        # TODO: pretty sure this should just be
+        # self.distribution is sp.stats.lognorm
         if type(self.distribution) is type(sp.stats.lognorm):
             mean = self.params[2]
             stdev = self.params[0]

@@ -25,6 +25,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+sys.path.insert(0, str(Path("../examples/usage").resolve()))
 sys.path.insert(0, str(Path("../src").resolve()))
 
 import interlab

@@ -1,0 +1,20 @@
+test:
+  imports:
+    - interlab_py
+  commands:
+    - pip check
+  requires:
+    - pip
+    - python {{ python_min }}
+
+about:
+  home: https://github.com/usnistgov/interlab_py
+  summary: All the boilerplate you need to create a Python package.
+  description: |
+    All the boilerplate you need to create a Python package.
+  license: NIST-PD
+  license_file: LICENSE
+
+extra:
+  recipe-maintainers:
+    - wpk-nist-gov

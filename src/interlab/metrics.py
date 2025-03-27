@@ -6,12 +6,12 @@ Distance metrics not available in scipy.
 """
 
 from __future__ import annotations
+
+import math
 from typing import TYPE_CHECKING
 
 import numpy as np
 import scipy as sp
-import math
-
 
 if TYPE_CHECKING:
     from numpy.typing import ArrayLike
@@ -20,10 +20,10 @@ if TYPE_CHECKING:
 def hyperbolic_transform(distance: float) -> float:
     try:
         hyperbolic_distance = math.log((1 + distance) / (1 - distance))
-    except ValueError:
+    except ValueError as e:
         print(distance)
         print((1 + distance) / (1 - distance))
-        raise ValueError
+        raise ValueError from e
 
     return hyperbolic_distance
 

@@ -3,20 +3,17 @@ Project level functionality (:mod:`interlab.project`)
 =====================================================
 """
 
-from .utilities import ExperimentGroup, InterlabArray, idfunc
-
 import math
+
+import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
 import scipy.spatial
 import scipy.stats
-import matplotlib.pyplot as plt
-
 from sklearn.impute import SimpleImputer
 
-
 from . import plot_utils as plu
-
+from .utilities import ExperimentGroup, InterlabArray, idfunc
 
 # We use the tqdm notebook function and its widgets in order to run a lot of things, but we don't actually need it
 try:
@@ -28,7 +25,7 @@ except ImportError:
     tqfunc = idfunc
 
 
-class Project(object):
+class Project:
     """
     The top-level project class for the interlaboratory comparison module
 
@@ -185,9 +182,7 @@ class Project(object):
             if data[key].shape[0] > 2:
                 self.experiment_groups += [ExperimentGroup(**group_keyw)]
             else:
-                print(
-                    "Group {} has fewer than 3 measurements, not creating".format(key)
-                )
+                print(f"Group {key} has fewer than 3 measurements, not creating")
 
         return
 
@@ -308,7 +303,7 @@ class Project(object):
             numcols += 1
             widths += [spectrum_width]
             total_width += spectrum_width
-        for i in range(numdist):
+        for _i in range(numdist):
             widths += [
                 distance_width
             ]  # Add the appropriate number of columns to the width list
@@ -580,11 +575,11 @@ class Project(object):
         a = ax.set_yticks(range(len(sets)))
         a = ax.set_yticklabels(sets)
 
-    def _standard_plot(
-        self, numplots, numcols, gs_kw=dict(wspace=0.1, hspace=0.4), **kwargs
-    ):
+    def _standard_plot(self, numplots, numcols, gs_kw=None, **kwargs):
         """Creates a standard plot that we use a lot"""
 
+        if gs_kw is None:
+            gs_kw = dict(wspace=0.1, hspace=0.4)
         numrows = int(math.floor((numplots + numcols - 1) / numcols))
         height = 1
         width = 5

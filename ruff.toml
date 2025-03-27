@@ -13,10 +13,15 @@ extend-exclude = [
 fix = true
 unsafe-fixes = true
 
-# [format]
-# docstring-code-format = true
+[format]
+docstring-code-format = true
 
-# [lint]
+[lint]
+extend-select = [
+    "B",
+    "I",
+    "UP",
+]
 # preview = true
 # select = [
 #     "ALL",

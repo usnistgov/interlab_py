@@ -14,13 +14,12 @@ method in the contained object.
 
 """
 
-import scipy as sp
-import scipy.stats
 import math
-import numpy as np
 
 import matplotlib.pyplot as plt
-
+import numpy as np
+import scipy as sp
+import scipy.stats
 from sklearn import decomposition as skdecomp
 
 
@@ -34,7 +33,7 @@ def idfunc(*args, **kwargs):
 
 
 def g_formatter(x):
-    a, b = "{:.2e}".format(x).split("e")
+    a, b = f"{x:.2e}".split("e")
     b = int(b)
     a = float(a)
     if not (b > 2) or (b < -1):
@@ -42,7 +41,7 @@ def g_formatter(x):
         a = a * mult
         prec = min(max(2 - b, 0), 2)
         return (r"${:." + str(prec) + "f}$").format(a)
-    return r"${}\times10^{{{}}}$".format(a, b)
+    return rf"${a}\times10^{{{b}}}$"
 
 
 def calculate_minmax(data):
@@ -66,7 +65,7 @@ def calculate_minmax(data):
     return distance_min, distance_max
 
 
-class ExperimentGroup(object):
+class ExperimentGroup:
     """
     Container for spectral data and methods for analysis
 
@@ -208,12 +207,16 @@ class ExperimentGroup(object):
         ax_row,
         plot_data=False,
         distance_metrics=None,
-        data_kwargs={},
-        distance_kwargs={},
+        data_kwargs=None,
+        distance_kwargs=None,
         show_titles=False,
     ):
         """Heatmaps of interspectral distances and (optionally) line plots of data"""
 
+        if distance_kwargs is None:
+            distance_kwargs = {}
+        if data_kwargs is None:
+            data_kwargs = {}
         if distance_metrics is None:
             metrics_to_plot = self.distance_metrics
         else:
@@ -243,7 +246,7 @@ class ExperimentGroup(object):
         ax_row[0].set_yticklabels(self.data_names, size=7)
 
 
-class DistanceMetric(object):
+class DistanceMetric:
     """
     A distance metric and the interspectral distances associated with it
 
@@ -390,7 +393,7 @@ class DistanceMetric(object):
         return calculate_minmax(self.distance_matrix)
 
 
-class Population(object):
+class Population:
     """
     Object containing some values, a distribution function fit to those values, and corresponding scores
 
@@ -481,7 +484,7 @@ class Population(object):
         #             return
 
         # Note that, because we always use a support fraction, we always want to remove outliers one-by-one
-        for i in range(max_num_outliers):
+        for _i in range(max_num_outliers):
             zmax = self.zscores[
                 self.outlier_mask
             ].max()  # Get the biggest z-score still considered in the distribution
@@ -572,7 +575,7 @@ class Population(object):
         return ax
 
 
-class InterlabArray(object):
+class InterlabArray:
     """Object for executing interlaboratory comparison
 
     Parameters
@@ -740,7 +743,7 @@ class InterlabArray(object):
         ax.set_xticklabels(self.datasets, rotation="vertical")
 
         # Draw dividing lines between components
-        for spec_num, spectrum in enumerate(self.datasets):
+        for spec_num, _spectrum in enumerate(self.datasets):
             ax.axvline(x=spec_num + 0.5, color="k", ls=":")
 
         # Print the explained variance ratios

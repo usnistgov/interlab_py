@@ -94,12 +94,11 @@ This will, in order:
 """
 
 import copy
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as _version
 
 from . import metrics
 from .project import Project
-
-from importlib.metadata import PackageNotFoundError
-from importlib.metadata import version as _version
 
 try:
     __version__ = _version("interlab_py")

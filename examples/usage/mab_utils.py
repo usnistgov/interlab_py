@@ -1,12 +1,13 @@
-from builtins import isinstance
+import os
 import struct
-import numpy as np
-import matplotlib.pyplot as plt
+
 import matplotlib.colors as mcolors
 import matplotlib.patches as mplp
+import matplotlib.pyplot as plt
 import mpl_toolkits.axes_grid1.inset_locator as mplax
-import os
+import numpy as np
 import pandas as pd
+
 # import tqdm
 
 
@@ -30,7 +31,7 @@ except ImportError:
 
 
 def g_formatter(x):
-    a, b = "{:.2e}".format(x).split("e")
+    a, b = f"{x:.2e}".split("e")
     b = int(b)
     a = float(a)
     if not (b > 2) or (b < -1):
@@ -38,7 +39,7 @@ def g_formatter(x):
         a = a * mult
         prec = min(max(2 - b, 0), 2)
         return (r"${:." + str(prec) + "f}$").format(a)
-    return r"${}\times10^{{{}}}$".format(a, b)
+    return rf"${a}\times10^{{{b}}}$"
 
 
 # File reading and metadata processing utilities
@@ -119,7 +120,7 @@ def getfile(df, prefix="./study/interp/"):
     files = []
     for i in df.INDEX:
         # print(i)
-        begin_str = "{:0>3}".format(i)
+        begin_str = f"{i:0>3}"
         for filename in filelist:
             if filename.startswith(begin_str):
                 file = prefix + filename
@@ -156,7 +157,6 @@ def read_all_metadata(
     if keep_nmr_corrections_data:
         last_col = None
     column_names = df.columns.values[0].split()[1:last_col]
-    column_names
 
     # Create the metadata table from the parsed version of the text metadata table
     metadata_dict = {}
@@ -223,7 +223,7 @@ def read_all_data(metadata_table, indices_to_split, split_point, shape=None):
         # Empty container for this set of measurements
         nmrdata = []
         titles = []
-        for codename, explist in tqfunc(
+        for _codename, explist in tqfunc(
             split_table.groupby(lower_indices),
             desc=description,
         ):
@@ -269,7 +269,7 @@ def save_outlier_data(
 
         # Load the outliers into the metadata table and print the distances and corresponding z scores
         nmr_start = 0
-        for codename, explist in data.groupby(lower_indices):
+        for _codename, explist in data.groupby(lower_indices):
             nmr_end = nmr_start + len(explist)
             this_dist = data_metric.values[nmr_start:nmr_end]
             this_z = data_metric.zscores[nmr_start:nmr_end]
@@ -298,8 +298,10 @@ def save_outlier_data(
 #     return cmap
 
 
-def colorize(data, interp_map, colormap, greyscale_conversion=[0.3, 0.59, 0.11, 0]):
+def colorize(data, interp_map, colormap, greyscale_conversion=None):
     """Converts data to a colormap based on the interpolation map interp_map, and also converts the colormap to a greyscale map using greyscale_conversion."""
+    if greyscale_conversion is None:
+        greyscale_conversion = [0.3, 0.59, 0.11, 0]
     data = np.interp(
         data, *interp_map
     )  # Use the linear map to map the data between 0 and 1
@@ -489,12 +491,14 @@ def nmrbig(
     ncols=2,
     cmap=None,
     color="purple",
-    levels=[1, 5, 10, 15, 20],
+    levels=None,
     plot_corners=None,
     shape=None,
     window=True,
     **grid_args,
 ):
+    if levels is None:
+        levels = [1, 5, 10, 15, 20]
     if plot_corners is None:
         plot_corners = [2.002, -0.799, 27.513, 7.005]
     if shape is None:
@@ -508,7 +512,7 @@ def nmrbig(
 
     for (index, row), ax in zip(explist.iterrows(), axes.flatten()):
         file = row.File
-        index = "{:0>3d}".format(int(row.INDEX))
+        index = f"{int(row.INDEX):0>3d}"
         etype = row.ExpType
         code = row.ExpCode
         zscore = row.Zscore
@@ -534,7 +538,7 @@ def nmrbig(
         )
 
         plot_label = "-".join((index, code, etype))
-        zscore_string = "Z = {:4.3f}".format(zscore)
+        zscore_string = f"Z = {zscore:4.3f}"
         plot_label = ": ".join((plot_label, zscore_string))
 
         ax.text(
@@ -557,7 +561,7 @@ def nmrbig(
                 bbox=bbox,
             )
         elif laboutlier:
-            tx = "Lab outlier, z = {:5.2f}".format(row.LabZscore)
+            tx = f"Lab outlier, z = {row.LabZscore:5.2f}"
             ax.text(
                 0.05, 0.95, tx, ha="left", va="top", transform=ax.transAxes, bbox=bbox
             )
@@ -571,12 +575,14 @@ def plot_the_nmr(
     cmap=seismic_with_black,
     norm=None,
     colorbar=False,
-    levels=np.array([0, 2, 5, 10, 15, 20]),
+    levels=(0, 2, 5, 10, 15, 20),
     plot_corners=None,
     shape=None,
     window=True,
     **grid_kw,
 ):
+    levels = np.asarray(levels)
+
     nrows = len(explist) // ncols
     if nrows < len(explist) / ncols:
         nrows += 1
@@ -596,7 +602,7 @@ def plot_the_nmr(
 
     for (index, row), ax in zip(explist.iterrows(), axes.flatten()):
         file = row.File
-        index = "{:0>3d}".format(int(row.INDEX))
+        index = f"{int(row.INDEX):0>3d}"
         etype = row.ExpType
         code = row.ExpCode
         outlier = row.Outlier
@@ -729,9 +735,13 @@ def nmr_color_scaled(
     inset_width=None,
     inset_height=None,
     colormap_spine_color="k",
-    corner_1=[0, 0],
-    corner_2=[1, 0],
+    corner_1=None,
+    corner_2=None,
 ):
+    if corner_2 is None:
+        corner_2 = [1, 0]
+    if corner_1 is None:
+        corner_1 = [0, 0]
     data = nmr_read(file)
     data = data.reshape(shape)
 
@@ -796,10 +806,10 @@ def nmr_color_scaled(
     )
     cb.set_ticklabels(
         [
-            "{:.0f}".format(interp_map[0][0]),
-            "{:.1f}".format(interp_map[0][1]),
-            "{:.1f}".format(interp_map[0][3]),
-            "{:.0f}".format(interp_map[0][4]),
+            f"{interp_map[0][0]:.0f}",
+            f"{interp_map[0][1]:.1f}",
+            f"{interp_map[0][3]:.1f}",
+            f"{interp_map[0][4]:.0f}",
         ]
     )
 
@@ -827,7 +837,9 @@ def nmr_color_scaled(
         better_mark_inset(ax, ax_sub, corner_1, corner_2, colormap_spine_color)
 
 
-def nmr_annotate(im, ax, cb_ticks=[0, 1], label=None):
+def nmr_annotate(im, ax, cb_ticks=None, label=None):
+    if cb_ticks is None:
+        cb_ticks = [0, 1]
     ax.invert_yaxis()
     ax.set_xlabel("$^1$H shift (ppm)", size=15)
     ax.set_ylabel("$^{13}$C shift (ppm)", size=15)
